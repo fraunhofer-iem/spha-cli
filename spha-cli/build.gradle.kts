@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.0.10"
+    application
 }
 
 group = "de.fraunhofer.iem"
@@ -14,4 +15,8 @@ dependencies{
     implementation("de.fraunhofer.iem.kpiCalculator:core")
     implementation("de.fraunhofer.iem.kpiCalculator:model")
     implementation("de.fraunhofer.iem.kpiCalculator:adapter")
+}
+
+application{
+    mainClass = "de.fraunhofer.iem.spha.cli.MainKt"
 }
