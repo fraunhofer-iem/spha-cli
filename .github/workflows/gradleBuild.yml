@@ -6,14 +6,9 @@ on:
   pull_request:
     branches: [ "main", "dev" ]
 
-permissions:
-  contents: read
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,6 +23,3 @@ jobs:
 
       - name: Execute Gradle build
         run: ./gradlew build
-
-#      - name: Execute tests
-#        run: ./gradlew test
