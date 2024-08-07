@@ -1,0 +1,1 @@
+rootProject.name = "spha-cli"
