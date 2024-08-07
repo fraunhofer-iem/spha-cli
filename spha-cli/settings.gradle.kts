@@ -1,1 +1,1 @@
-rootProject.name = "spha-cli"
+rootProject.name = "software-product-health-analyzer-cli"

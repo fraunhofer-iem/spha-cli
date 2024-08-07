@@ -1,8 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    id("org.jetbrains.kotlin.plugin.allopen") version "2.0.20-Beta2"
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.0.10"
 }
 
 group = "de.fraunhofer.iem"
@@ -11,4 +8,10 @@ java.sourceCompatibility = JavaVersion.VERSION_21
 
 repositories {
     mavenCentral()
+}
+
+dependencies{
+    implementation("de.fraunhofer.iem.kpiCalculator:core")
+    implementation("de.fraunhofer.iem.kpiCalculator:model")
+    implementation("de.fraunhofer.iem.kpiCalculator:adapter")
 }

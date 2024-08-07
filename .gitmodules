@@ -1,0 +1,3 @@
+[submodule "library"]
+	path = library
+	url = https://github.com/fraunhofer-iem/software-product-health-analyzer

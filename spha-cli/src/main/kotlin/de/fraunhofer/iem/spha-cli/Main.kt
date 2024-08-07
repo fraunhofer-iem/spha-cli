@@ -1,3 +1,5 @@
+import de.fraunhofer.iem.kpiCalculator.model.kpi.hierarchy.KpiNode
+
 fun main() {
-    println("Hello World");
+    println(KpiNode.javaClass.name);
 }

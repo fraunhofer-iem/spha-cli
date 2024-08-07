@@ -3,5 +3,6 @@ plugins {
 }
 rootProject.name = "software-product-health-analyzer"
 
+// Order matters!
+includeBuild("library")
 includeBuild("spha-cli")
-
