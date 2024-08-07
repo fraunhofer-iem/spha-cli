@@ -15,6 +15,11 @@ dependencies{
     implementation("de.fraunhofer.iem.kpiCalculator:core")
     implementation("de.fraunhofer.iem.kpiCalculator:model")
     implementation("de.fraunhofer.iem.kpiCalculator:adapter")
+
+    implementation("com.github.ajalt.clikt:clikt:4.4.0")
+
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
+    implementation("org.slf4j:slf4j-simple:2.0.14")
 }
 
 application{
