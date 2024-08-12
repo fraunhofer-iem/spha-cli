@@ -24,9 +24,6 @@ class TransformToolResultCommand : SphaToolCommandBase(name = "transform",
     private val output by option("-o", "--output",
         help = "The output directory where the result of the operation is stored. Default is the current working directory.")
 
-    private val input by option("-i", "--input",
-        help = "The input data to transform.")
-
     override fun run() {
         super.run()
 
@@ -46,8 +43,8 @@ class TransformToolResultCommand : SphaToolCommandBase(name = "transform",
 
     private fun createResultFile(): Path {
         val fileName = "$toolName-result.json"
-        // Use current working directory if input is null.
-        val outputPath = Paths.get(input ?: "", fileName).toAbsolutePath()
+        // Use current working directory if output is null.
+        val outputPath = Paths.get(output ?: "", fileName).toAbsolutePath()
         return Files.createFile(outputPath)
     }
 }
