@@ -4,20 +4,13 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.fraunhofer.iem.kpiCalculator.adapter.AdapterResult
 import de.fraunhofer.iem.kpiCalculator.adapter.tools.SupportedTool
-import de.fraunhofer.iem.kpiCalculator.adapter.tools.occmd.OccmdAdapter
-import de.fraunhofer.iem.kpiCalculator.model.kpi.hierarchy.KpiCalculationResult
 import de.fraunhofer.iem.spha.cli.SphaToolCommandBase
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
-import java.io.File
-import java.nio.file.FileStore
-import java.nio.file.FileSystem
-import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.outputStream
-import kotlin.io.path.writer
 
 class TransformToolResultCommand : SphaToolCommandBase(name = "transform",
     help = "transforms a specified KPI-provider (such as a SAST tool) result into a uniform data format, " +
@@ -33,9 +26,6 @@ class TransformToolResultCommand : SphaToolCommandBase(name = "transform",
 
     private val input by option("-i", "--input",
         help = "The input data to transform.")
-    //.required()
-
-    //private val options by requireObject<CommonOptions>()
 
     override fun run() {
         super.run()
