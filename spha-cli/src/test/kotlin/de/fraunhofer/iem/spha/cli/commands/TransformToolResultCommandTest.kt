@@ -57,7 +57,7 @@ class TransformToolResultCommandTest : KoinTest {
     }
 
     @Test
-    fun testTransform_StrictTransformerInternalThrow() {
+    fun testTransform_StrictTransformerInternal_Throws() {
 
         val toolName = SupportedTool.Occmd.name
 
