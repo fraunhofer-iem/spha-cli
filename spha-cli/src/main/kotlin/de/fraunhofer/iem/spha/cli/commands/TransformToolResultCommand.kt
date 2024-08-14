@@ -47,12 +47,16 @@ internal class TransformToolResultCommand : SphaToolCommandBase(name = "transfor
     }
 
     private fun getResultFilePath(): Path {
-        val fileName = "$toolName-result.json"
+        val fileName = "$toolName$RESULT_FILE_SUFFIX"
         // Use current working directory if output is null.
 
         val location = fileSystem.getPath(output ?: "")
         location.createDirectories()
 
         return location.resolve(fileName).toAbsolutePath()
+    }
+
+    companion object{
+        internal const val RESULT_FILE_SUFFIX = "-result.json"
     }
 }

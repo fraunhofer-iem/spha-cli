@@ -153,10 +153,11 @@ class TransformToolResultCommandTest : KoinTest {
     companion object{
         @JvmStatic
         fun outputTestSource(): List<Arguments> {
+            val toolName = "Occmd"
             return listOf(
-                arguments("Occmd", ".", "/work/Occmd-result.json"),
-                arguments("Occmd", "dir", "/work/dir/Occmd-result.json"),
-                arguments("Occmd", "/other/dir", "/other/dir/Occmd-result.json")
+                arguments("Occmd", ".", "/work/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
+                arguments("Occmd", "dir", "/work/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
+                arguments("Occmd", "/other/dir", "/other/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}")
             )
         }
     }
