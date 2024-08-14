@@ -13,6 +13,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.nio.file.FileSystem
 import java.nio.file.Path
+import kotlin.io.path.createDirectories
 
 internal class TransformToolResultCommand : SphaToolCommandBase(name = "transform",
     help = "transforms a specified KPI-provider (such as a SAST tool) result into a uniform data format, " +
@@ -48,6 +49,10 @@ internal class TransformToolResultCommand : SphaToolCommandBase(name = "transfor
     private fun getResultFilePath(): Path {
         val fileName = "$toolName-result.json"
         // Use current working directory if output is null.
-        return fileSystem.getPath(output ?: "", fileName).toAbsolutePath()
+
+        val location = fileSystem.getPath(output ?: "")
+        location.createDirectories()
+
+        return location.resolve(fileName).toAbsolutePath()
     }
 }

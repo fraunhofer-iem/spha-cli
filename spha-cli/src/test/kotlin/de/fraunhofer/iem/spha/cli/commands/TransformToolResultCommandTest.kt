@@ -9,13 +9,14 @@ import de.fraunhofer.iem.kpiCalculator.model.kpi.KpiId
 import de.fraunhofer.iem.kpiCalculator.model.kpi.RawValueKpi
 import de.fraunhofer.iem.spha.cli.appModules
 import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
-import de.fraunhofer.iem.spha.cli.transformer.TransformerOptions
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.apache.commons.lang3.SystemUtils
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
-import org.junit.platform.commons.util.CollectionUtils
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.Arguments.arguments
+import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.koin.core.logger.Level
 import org.koin.test.KoinTest
 import org.koin.test.junit5.KoinTestExtension
@@ -34,6 +35,7 @@ import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+
 
 class TransformToolResultCommandTest : KoinTest {
 
@@ -57,13 +59,11 @@ class TransformToolResultCommandTest : KoinTest {
     }
 
     @Test
-    fun testTransform_StrictTransformerInternal_Throws() {
+    fun testTransform_TransformerInternal_Throws() {
 
         val toolName = SupportedTool.Occmd.name
 
-        val fileSystem = declare<FileSystem> {
-            Jimfs.newFileSystem(Configuration.unix())
-        }
+        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
 
         declareMock<RawKpiTransformer> {
             given(getRawKpis(any(), eq(true))).willThrow(IllegalStateException())
@@ -72,9 +72,22 @@ class TransformToolResultCommandTest : KoinTest {
         val expectedResultPath = fileSystem.getPath("$toolName-result.json").toAbsolutePath()
         expectedResultPath.writeText("someJunk...")
 
-        assertThrows<IllegalStateException> { TransformToolResultCommand().test("--strict -t $toolName") }
+        assertThrows<IllegalStateException> { TransformToolResultCommand().test("-t $toolName") }
         // In case of failure, existing file should not be overwritten.
         assertEquals("someJunk...", expectedResultPath.readText())
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun testTransform_StrictModeApplied(expectedStrict: Boolean) {
+        val toolName = SupportedTool.Occmd.name
+        declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
+
+        val transformer = declareMock<RawKpiTransformer>()
+        val strictCommandInput = if (expectedStrict) "--strict" else ""
+        TransformToolResultCommand().test("$strictCommandInput -t $toolName")
+
+        Mockito.verify(transformer,times(1)).getRawKpis(any(), eq(expectedStrict))
     }
 
     @Test
@@ -82,9 +95,7 @@ class TransformToolResultCommandTest : KoinTest {
 
         val toolName = SupportedTool.Occmd.name
 
-        val fileSystem = declare<FileSystem> {
-            Jimfs.newFileSystem(Configuration.unix())
-        }
+        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
 
         val transformer = declareMock<RawKpiTransformer> {
             given(getRawKpis(any(), anyBoolean()))
@@ -111,9 +122,7 @@ class TransformToolResultCommandTest : KoinTest {
             RawValueKpi(KpiId.SECRETS, 100),
             RawValueKpi(KpiId.SECURITY, 1))
 
-        val fileSystem = declare<FileSystem> {
-            Jimfs.newFileSystem(Configuration.unix())
-        }
+        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
 
         declareMock<RawKpiTransformer> {
             given(getRawKpis(any(), anyBoolean()))
@@ -127,5 +136,28 @@ class TransformToolResultCommandTest : KoinTest {
         // Read in the written file and check if it matches the result
         val actualRawKpis = Json.decodeFromString<Collection<RawValueKpi>>(expectedResultPath.readText())
         assertEquals(actualRawKpis, resultList)
+    }
+
+    @ParameterizedTest
+    @MethodSource("outputTestSource")
+    fun testTransform_UseOutputPath(toolName: String, output: String, expectedFilePath: String) {
+
+        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
+        declareMock<RawKpiTransformer> { given(getRawKpis(any(), anyBoolean())).willReturn(listOf()) }
+
+        TransformToolResultCommand().test("-t $toolName -o $output")
+
+        assertTrue { fileSystem.provider().exists(fileSystem.getPath(expectedFilePath)) }
+    }
+
+    companion object{
+        @JvmStatic
+        fun outputTestSource(): List<Arguments> {
+            return listOf(
+                arguments("Occmd", ".", "/work/Occmd-result.json"),
+                arguments("Occmd", "dir", "/work/dir/Occmd-result.json"),
+                arguments("Occmd", "/other/dir", "/other/dir/Occmd-result.json")
+            )
+        }
     }
 }

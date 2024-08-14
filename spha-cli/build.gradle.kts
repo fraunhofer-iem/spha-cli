@@ -30,8 +30,7 @@ dependencies{
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("com.google.jimfs:jimfs:1.3.0")
     testImplementation("org.apache.commons:commons-lang3:3.16.0")
-
-
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
 }
 
 tasks.test {
