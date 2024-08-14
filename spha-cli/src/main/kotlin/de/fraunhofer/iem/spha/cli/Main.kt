@@ -61,7 +61,7 @@ private class MainSphaToolCommand : NoOpCliktCommand(){
  * Base class for all commands of this application, except for the main command.
  * @implNote Due to the design of clikt, the main command should be separate
  * and this base class should not introduce the --verbose switch. Otherwise, the following cli input would be legal:
- * './spha -v transform -v'. The first -v switch actually triggers the logging configuration,
+ * './spha -v transform -t abc -v'. The first -v switch actually triggers the logging configuration,
  * where the second -v switch is independent to the first switch. This will cause confusion for users, which switch to use.
  */
 internal abstract class SphaToolCommandBase(name: String? = null, help: String = "")
