@@ -157,7 +157,9 @@ class TransformToolResultCommandTest : KoinTest {
             return listOf(
                 arguments("Occmd", ".", "/work/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
                 arguments("Occmd", "dir", "/work/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
-                arguments("Occmd", "/other/dir", "/other/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}")
+                arguments("Occmd", "/other/dir", "/other/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
+                // This is a misuse, but it should work nether the less.
+                arguments("Occmd", "/file.txt", "/file.txt/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}")
             )
         }
     }
