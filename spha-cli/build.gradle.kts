@@ -12,25 +12,22 @@ repositories {
 }
 
 dependencies{
-    implementation("de.fraunhofer.iem.kpiCalculator:core")
-    implementation("de.fraunhofer.iem.kpiCalculator:model")
-    implementation("de.fraunhofer.iem.kpiCalculator:adapter")
+    implementation(libs.bundles.kpiCalculator)
 
-    implementation("com.github.ajalt.clikt:clikt:4.4.0")
+    implementation(libs.kotlin.cli)
+    implementation(libs.kotlin.logging)
 
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
-    implementation("org.slf4j:slf4j-simple:2.0.14")
+    implementation(libs.simpleLogger)
     implementation(libs.kotlin.serialization.json)
-
-    implementation("io.insert-koin:koin-core:3.5.6")
+    implementation(libs.kotlin.di)
 
     testImplementation(libs.kotlin.test)
-    testImplementation("io.insert-koin:koin-test:3.5.6")
-    testImplementation("io.insert-koin:koin-test-junit5:3.5.6")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    testImplementation("com.google.jimfs:jimfs:1.3.0")
-    testImplementation("org.apache.commons:commons-lang3:3.16.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
+    testImplementation(libs.kotlin.di.test)
+    testImplementation(libs.kotlin.di.junit5)
+    testImplementation(libs.test.mocking)
+    testImplementation(libs.test.fileSystem)
+    testImplementation(libs.apache.commons)
+    testImplementation(libs.test.junit5.params)
 }
 
 tasks.test {
