@@ -1,29 +1,47 @@
 plugins {
-    kotlin("jvm") version "2.0.10"
-    kotlin("plugin.serialization") version "2.0.10"
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.serialization)
     application
 }
 
-group = "de.fraunhofer.iem"
+group = "de.fraunhofer.iem.spha"
 version = "0.0.2-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_21
 
 repositories {
     mavenCentral()
 }
 
 dependencies{
-    implementation("de.fraunhofer.iem.kpiCalculator:core")
-    implementation("de.fraunhofer.iem.kpiCalculator:model")
-    implementation("de.fraunhofer.iem.kpiCalculator:adapter")
+    implementation(libs.bundles.kpiCalculator)
 
-    implementation("com.github.ajalt.clikt:clikt:4.4.0")
+    implementation(libs.kotlin.cli)
+    implementation(libs.kotlin.logging)
 
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
-    implementation("org.slf4j:slf4j-simple:2.0.14")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+    implementation(libs.simpleLogger)
+    implementation(libs.kotlin.serialization.json)
+    implementation(libs.kotlin.di)
+
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlin.di.test)
+    testImplementation(libs.kotlin.di.junit5)
+    testImplementation(libs.test.mocking)
+    testImplementation(libs.test.fileSystem)
+    testImplementation(libs.apache.commons)
+    testImplementation(libs.test.junit5.params)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 application{
     mainClass = "de.fraunhofer.iem.spha.cli.MainKt"
 }
+
+kotlin {
+    compilerOptions {
+        jvmToolchain(21)
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+    }
+}
+

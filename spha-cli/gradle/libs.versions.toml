@@ -1,0 +1,42 @@
+[versions]
+kotlin = "2.0.10"
+kotlinxSerialization = "1.7.1"
+kotlinCli = "4.4.0"
+kotlinLogging = "7.0.0"
+simpleLogger = "2.0.14"
+koinDI = "3.5.6"
+mockito = "5.4.0"
+jimfs = "1.3.0"
+apache-commoms = "3.16.0"
+junit = "5.11.0"
+
+[libraries]
+# KPI calculator
+kpi-calculator-core = { module = "de.fraunhofer.iem.kpiCalculator:core" }
+kpi-calculator-model = { module = "de.fraunhofer.iem.kpiCalculator:model" }
+kpi-calculator-adapter = { module = "de.fraunhofer.iem.kpiCalculator:adapter" }
+
+kotlin-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+kotlin-cli = { module = "com.github.ajalt.clikt:clikt", version.ref = "kotlinCli" }
+kotlin-di = { module = "io.insert-koin:koin-core", version.ref = "koinDI" }
+# Logging
+kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlinLogging" }
+simpleLogger = { module = "org.slf4j:slf4j-simple", version.ref = "simpleLogger" }
+
+# Testing Libs
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-di-test = { module = "io.insert-koin:koin-test", version.ref = "koinDI" }
+kotlin-di-junit5 = { module = "io.insert-koin:koin-test-junit5", version.ref = "koinDI" }
+
+test-mocking = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockito" }
+test-fileSystem = { module = "com.google.jimfs:jimfs", version.ref = "jimfs" }
+apache-commons = { module = "org.apache.commons:commons-lang3", version.ref = "apache-commoms" }
+test-junit5-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+[bundles]
+kpiCalculator = ["kpi-calculator-adapter", "kpi-calculator-core", "kpi-calculator-model"]
+

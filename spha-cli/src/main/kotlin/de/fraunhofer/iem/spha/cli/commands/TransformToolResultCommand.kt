@@ -2,19 +2,22 @@ package de.fraunhofer.iem.spha.cli.commands
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import de.fraunhofer.iem.kpiCalculator.adapter.AdapterResult
 import de.fraunhofer.iem.kpiCalculator.adapter.tools.SupportedTool
 import de.fraunhofer.iem.spha.cli.SphaToolCommandBase
+import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
+import de.fraunhofer.iem.spha.cli.transformer.TransformerOptions
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
-import java.nio.file.Files
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import java.nio.file.FileSystem
 import java.nio.file.Path
-import java.nio.file.Paths
-import kotlin.io.path.outputStream
+import kotlin.io.path.createDirectories
 
-class TransformToolResultCommand : SphaToolCommandBase(name = "transform",
+internal class TransformToolResultCommand : SphaToolCommandBase(name = "transform",
     help = "transforms a specified KPI-provider (such as a SAST tool) result into a uniform data format, " +
-            "so that it can be used for the 'calculate' command.") {
+            "so that it can be used for the 'calculate' command."), KoinComponent {
 
     private val toolName by option("-t", "--tool",
         help = "The identifier of the KPI-provider tool that produced the input. " +
@@ -24,27 +27,36 @@ class TransformToolResultCommand : SphaToolCommandBase(name = "transform",
     private val output by option("-o", "--output",
         help = "The output directory where the result of the operation is stored. Default is the current working directory.")
 
+    private val transformer by inject<RawKpiTransformer>()
+    private val fileSystem by inject<FileSystem>()
+
+    @OptIn(ExperimentalSerializationApi::class)
     override fun run() {
         super.run()
 
         val tool = SupportedTool.fromName(toolName)
-        val result : Collection<AdapterResult> = when (tool){
-            SupportedTool.Occmd -> {
-//                val adapterInput = OccmdAdapter.createInputFrom(input)
-//                OccmdAdapter.transformDataToKpi(adapterInput)
-                throw NotImplementedError()
-            }
-        }
 
-        createResultFile().outputStream().use {
+        val result = transformer.getRawKpis(TransformerOptions(tool), strict)
+
+        val resultPath = getResultFilePath()
+
+        fileSystem.provider().newOutputStream(resultPath).use {
+            Logger.trace{ "Storing result to '$resultPath'" }
             Json.encodeToStream(result, it)
         }
     }
 
-    private fun createResultFile(): Path {
-        val fileName = "$toolName-result.json"
+    private fun getResultFilePath(): Path {
+        val fileName = "$toolName$RESULT_FILE_SUFFIX"
         // Use current working directory if output is null.
-        val outputPath = Paths.get(output ?: "", fileName).toAbsolutePath()
-        return Files.createFile(outputPath)
+
+        val location = fileSystem.getPath(output ?: "")
+        location.createDirectories()
+
+        return location.resolve(fileName).toAbsolutePath()
+    }
+
+    companion object{
+        internal const val RESULT_FILE_SUFFIX = "-result.json"
     }
 }
