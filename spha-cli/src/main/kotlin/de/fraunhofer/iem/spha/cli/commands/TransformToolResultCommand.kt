@@ -2,6 +2,7 @@ package de.fraunhofer.iem.spha.cli.commands
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.options.split
 import de.fraunhofer.iem.kpiCalculator.adapter.tools.SupportedTool
 import de.fraunhofer.iem.spha.cli.SphaToolCommandBase
 import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
@@ -19,16 +20,23 @@ internal class TransformToolResultCommand : SphaToolCommandBase(name = "transfor
     help = "transforms a specified KPI-provider (such as a SAST tool) result into a uniform data format, " +
             "so that it can be used for the 'calculate' command."), KoinComponent {
 
+    private val transformer by inject<RawKpiTransformer>()
+    private val fileSystem by inject<FileSystem>()
+
     private val toolName by option("-t", "--tool",
         help = "The identifier of the KPI-provider tool that produced the input. " +
                 "Use the command --list-tools to get a list of available identifiers.")
     .required()
 
+    private val inputFiles by option("-i", "--inputFiles",
+        help = "List of input files. Usually these are result files produced by the tool as specified by --tool." +
+            "Paths are separated by the default path separator of the current system which is ; for windows and : for Linux.")
+        .split(fileSystem.separator)
+
     private val output by option("-o", "--output",
         help = "The output directory where the result of the operation is stored. Default is the current working directory.")
 
-    private val transformer by inject<RawKpiTransformer>()
-    private val fileSystem by inject<FileSystem>()
+
 
     @OptIn(ExperimentalSerializationApi::class)
     override fun run() {
@@ -36,7 +44,7 @@ internal class TransformToolResultCommand : SphaToolCommandBase(name = "transfor
 
         val tool = SupportedTool.fromName(toolName)
 
-        val result = transformer.getRawKpis(TransformerOptions(tool), strict)
+        val result = transformer.getRawKpis(TransformerOptions(tool, inputFiles), strict)
 
         val resultPath = getResultFilePath()
 
