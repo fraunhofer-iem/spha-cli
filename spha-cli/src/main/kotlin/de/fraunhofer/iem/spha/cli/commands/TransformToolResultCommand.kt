@@ -1,8 +1,8 @@
 package de.fraunhofer.iem.spha.cli.commands
 
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.options.split
 import de.fraunhofer.iem.kpiCalculator.adapter.tools.SupportedTool
 import de.fraunhofer.iem.spha.cli.SphaToolCommandBase
 import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
@@ -28,14 +28,13 @@ internal class TransformToolResultCommand : SphaToolCommandBase(name = "transfor
                 "Use the command --list-tools to get a list of available identifiers.")
     .required()
 
-    private val inputFiles by option("-i", "--inputFiles",
+    private val inputFiles by option("-i", "--inputFile",
         help = "List of input files. Usually these are result files produced by the tool as specified by --tool." +
-            "Paths are separated by the default path separator of the current system which is ; for windows and : for Linux.")
-        .split(fileSystem.separator)
+            "To specify multiple input files (if supported by --tool), the option can be used multiple times.")
+        .multiple()
 
     private val output by option("-o", "--output",
         help = "The output directory where the result of the operation is stored. Default is the current working directory.")
-
 
 
     @OptIn(ExperimentalSerializationApi::class)

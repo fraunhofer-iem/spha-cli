@@ -9,6 +9,7 @@ import de.fraunhofer.iem.kpiCalculator.model.kpi.KpiId
 import de.fraunhofer.iem.kpiCalculator.model.kpi.RawValueKpi
 import de.fraunhofer.iem.spha.cli.appModules
 import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
+import de.fraunhofer.iem.spha.cli.transformer.TransformerOptions
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -63,10 +64,10 @@ class TransformToolResultCommandTest : KoinTest {
 
         val toolName = SupportedTool.Occmd.name
 
-        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
+        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
         declareMock<RawKpiTransformer> {
-            given(getRawKpis(any(), eq(true))).willThrow(IllegalStateException())
+            given(getRawKpis(any(), anyBoolean())).willThrow(IllegalStateException())
         }
 
         val expectedResultPath = fileSystem.getPath("$toolName-result.json").toAbsolutePath()
@@ -81,7 +82,7 @@ class TransformToolResultCommandTest : KoinTest {
     @ValueSource(booleans = [false, true])
     fun testTransform_StrictModeApplied(expectedStrict: Boolean) {
         val toolName = SupportedTool.Occmd.name
-        declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
+        declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
         val transformer = declareMock<RawKpiTransformer>()
         val strictCommandInput = if (expectedStrict) "--strict" else ""
@@ -95,7 +96,7 @@ class TransformToolResultCommandTest : KoinTest {
 
         val toolName = SupportedTool.Occmd.name
 
-        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
+        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
         val transformer = declareMock<RawKpiTransformer> {
             given(getRawKpis(any(), anyBoolean()))
@@ -122,7 +123,7 @@ class TransformToolResultCommandTest : KoinTest {
             RawValueKpi(KpiId.SECRETS, 100),
             RawValueKpi(KpiId.SECURITY, 1))
 
-        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
+        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
         declareMock<RawKpiTransformer> {
             given(getRawKpis(any(), anyBoolean()))
@@ -150,6 +151,20 @@ class TransformToolResultCommandTest : KoinTest {
         assertTrue { fileSystem.provider().exists(fileSystem.getPath(expectedFilePath)) }
     }
 
+
+    @ParameterizedTest
+    @MethodSource("inputTestSource")
+    fun testTransform_MultipleInputsSplit(inputArg: String, expectedInputs: List<String>) {
+        val toolName = SupportedTool.Occmd.name
+
+        declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
+        val transformer = declareMock<RawKpiTransformer>()
+        TransformToolResultCommand().test("-t $toolName $inputArg")
+
+        val options = TransformerOptions(SupportedTool.Occmd, inputFiles = expectedInputs)
+        Mockito.verify(transformer, times(1)).getRawKpis(eq(options), anyBoolean())
+    }
+
     companion object{
         @JvmStatic
         fun outputTestSource(): List<Arguments> {
@@ -160,6 +175,15 @@ class TransformToolResultCommandTest : KoinTest {
                 arguments("Occmd", "/other/dir", "/other/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
                 // This is a misuse, but it should work nether the less.
                 arguments("Occmd", "/file.txt", "/file.txt/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}")
+            )
+        }
+
+        @JvmStatic
+        fun inputTestSource(): List<Arguments> {
+            return listOf(
+                arguments("-i input.json", listOf("input.json")),
+                arguments("--inputFile \"a b.json\"", listOf("a b.json")),
+                arguments("-i a.json --inputFile b.json -i \"d e.json\"", listOf("a.json", "b.json", "d e.json")),
             )
         }
     }

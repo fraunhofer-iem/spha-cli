@@ -2,9 +2,8 @@ package de.fraunhofer.iem.spha.cli.transformer
 
 import de.fraunhofer.iem.kpiCalculator.adapter.AdapterResult
 import de.fraunhofer.iem.kpiCalculator.adapter.tools.SupportedTool
-import de.fraunhofer.iem.kpiCalculator.adapter.tools.trivy.TrivyAdapter
-import de.fraunhofer.iem.kpiCalculator.adapter.tools.trivy.TrivyDto
 import de.fraunhofer.iem.kpiCalculator.model.kpi.RawValueKpi
+import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -27,7 +26,7 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent{
 
     override fun getRawKpis(options: TransformerOptions, strictMode: Boolean): Collection<RawValueKpi> {
 
-        val result : Collection<AdapterResult> = when (options.tool){
+        val result : Collection<AdapterResult> = when (options.tool) {
             SupportedTool.Occmd -> {
                 TODO()
 //                val adapterInput : OccmdDto = OccmdAdapter.createInputFrom(input)
@@ -53,11 +52,11 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent{
     }
 
     internal fun getSingleInputStreamFromInputFile(inputFiles : List<String>?, strictMode : Boolean) : InputStream {
-        if (inputFiles == null){
-            throw IllegalStateException("no input files specified.")
+        if (inputFiles.isNullOrEmpty()){
+            throw IllegalStateException("No input files specified.")
         }
 
-        if (inputFiles.count() > 1){
+        if (inputFiles.count() > 1) {
             if (strictMode) {
                 throw StrictModeConstraintFailed("Expected only one input file.")
             }
@@ -69,4 +68,3 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent{
 }
 
 
-internal class StrictModeConstraintFailed(message: String) : Exception(message)
