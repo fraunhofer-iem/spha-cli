@@ -2,8 +2,16 @@ package de.fraunhofer.iem.spha.cli.transformer
 
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
+import de.fraunhofer.iem.kpiCalculator.adapter.tools.trivy.TrivyAdapter
+import de.fraunhofer.iem.kpiCalculator.model.adapter.trivy.TrivyDto
+import de.fraunhofer.iem.kpiCalculator.model.adapter.trivy.TrivyVulnerabilityDto
+import de.fraunhofer.iem.kpiCalculator.model.adapter.vulnerability.VulnerabilityDto
 import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
 import de.fraunhofer.iem.spha.cli.appModules
+import io.mockk.every
+import io.mockk.mockkClass
+import io.mockk.mockkObject
+import io.mockk.verify
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
@@ -13,7 +21,6 @@ import org.koin.test.KoinTest
 import org.koin.test.junit5.KoinTestExtension
 import org.koin.test.junit5.mock.MockProviderExtension
 import org.koin.test.mock.declare
-import org.mockito.Mockito
 import java.nio.file.FileSystem
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,7 +36,7 @@ class Tool2RawKpiTransformerTest : KoinTest {
     @JvmField
     @RegisterExtension
     val mockProvider = MockProviderExtension.create { clazz ->
-        Mockito.mock(clazz.java)
+        mockkClass(clazz)
     }
 
     @ParameterizedTest
@@ -70,5 +77,26 @@ class Tool2RawKpiTransformerTest : KoinTest {
         command.getSingleInputStreamFromInputFile(listOf("a", "b"), false).use {
             assertEquals(123, it.read())
         }
+    }
+
+    @Test
+    fun getRawKpis_Trivy() {
+        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
+        fileSystem.provider().newOutputStream(fileSystem.getPath("a")).use {  }
+
+        val trivyVulns = listOf(
+            VulnerabilityDto("A", "1", 1.0),
+            VulnerabilityDto("B", "2", 2.3),
+        )
+        mockkObject(TrivyAdapter)
+        every { TrivyAdapter.dtoFromJson(any()) } returns TrivyDto(trivyVulns)
+
+        val command = Tool2RawKpiTransformer()
+        val kpis = command.getRawKpis(TransformerOptions("trivy", listOf("a")), false)
+
+        assertEquals(2, kpis.count())
+
+        verify(exactly = 1) { TrivyAdapter.dtoFromJson(any()) }
+        verify(exactly = 1) { TrivyAdapter.transformDataToKpi(eq(TrivyDto(trivyVulns))) }
     }
 }
