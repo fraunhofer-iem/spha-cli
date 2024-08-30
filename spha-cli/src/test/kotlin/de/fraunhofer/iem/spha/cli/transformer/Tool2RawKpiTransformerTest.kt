@@ -4,7 +4,6 @@ import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import de.fraunhofer.iem.kpiCalculator.adapter.tools.trivy.TrivyAdapter
 import de.fraunhofer.iem.kpiCalculator.model.adapter.trivy.TrivyDto
-import de.fraunhofer.iem.kpiCalculator.model.adapter.trivy.TrivyVulnerabilityDto
 import de.fraunhofer.iem.kpiCalculator.model.adapter.vulnerability.VulnerabilityDto
 import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
 import de.fraunhofer.iem.spha.cli.appModules
