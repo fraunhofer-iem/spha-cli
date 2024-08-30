@@ -12,29 +12,25 @@ import org.koin.core.component.inject
 import java.io.InputStream
 import java.nio.file.FileSystem
 
-data class TransformerOptions(
-    val tool : String,
-    val inputFiles : List<String>? = null
-)
-
 internal interface RawKpiTransformer {
     fun getRawKpis(options: TransformerOptions, strictMode: Boolean) : Collection<RawValueKpi>
 }
 
-internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent{
+internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
 
     private val _fileSystem by inject<FileSystem>()
-    private val _logger = KotlinLogging.logger{}
+    private val _logger = KotlinLogging.logger {}
 
     override fun getRawKpis(options: TransformerOptions, strictMode: Boolean): Collection<RawValueKpi> {
 
-        val result : Collection<AdapterResult> = when (options.tool) {
+        val result: Collection<AdapterResult> = when (options.tool) {
 //            "occmd" -> {
 //                val adapterInput: OccmdDto = OccmdAdapter.createInputFrom(input)
 //                OccmdAdapter.transformDataToKpi(adapterInput)
 //            }
             "trivy" -> {
                 getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
+                    _logger.info { "Selected supported tool: Trivy" }
                     val adapterInput: TrivyDto = TrivyAdapter.dtoFromJson(it)
                     return@use TrivyAdapter.transformDataToKpi(adapterInput)
                 }
@@ -50,15 +46,15 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent{
         }
 
         // If we have unequal counts, we know that adapter returned faulted elements. Thus, we throw in strict mode.
-        if (strictMode && rawKpis.count() != result.count()){
+        if (strictMode && rawKpis.count() != result.count()) {
             throw StrictModeConstraintFailed("The adapter produced faulted results.")
         }
 
         return rawKpis
     }
 
-    internal fun getSingleInputStreamFromInputFile(inputFiles : List<String>?, strictMode : Boolean) : InputStream {
-        if (inputFiles.isNullOrEmpty()){
+    internal fun getSingleInputStreamFromInputFile(inputFiles: List<String>?, strictMode: Boolean): InputStream {
+        if (inputFiles.isNullOrEmpty()) {
             throw IllegalStateException("No input files specified.")
         }
 
