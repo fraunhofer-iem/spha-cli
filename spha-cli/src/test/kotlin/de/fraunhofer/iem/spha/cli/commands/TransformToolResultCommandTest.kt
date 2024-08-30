@@ -10,6 +10,9 @@ import de.fraunhofer.iem.kpiCalculator.model.kpi.RawValueKpi
 import de.fraunhofer.iem.spha.cli.appModules
 import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
 import de.fraunhofer.iem.spha.cli.transformer.TransformerOptions
+import io.mockk.every
+import io.mockk.mockkClass
+import io.mockk.verify
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -24,12 +27,6 @@ import org.koin.test.junit5.KoinTestExtension
 import org.koin.test.junit5.mock.MockProviderExtension
 import org.koin.test.mock.declare
 import org.koin.test.mock.declareMock
-import org.mockito.BDDMockito.anyBoolean
-import org.mockito.BDDMockito.given
-import org.mockito.Mockito
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.times
 import java.nio.file.FileSystem
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
@@ -50,7 +47,7 @@ class TransformToolResultCommandTest : KoinTest {
     @JvmField
     @RegisterExtension
     val mockProvider = MockProviderExtension.create { clazz ->
-        Mockito.mock(clazz.java)
+        mockkClass(clazz)
     }
 
     @Test
@@ -67,7 +64,7 @@ class TransformToolResultCommandTest : KoinTest {
         val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
         declareMock<RawKpiTransformer> {
-            given(getRawKpis(any(), anyBoolean())).willThrow(IllegalStateException())
+            every { getRawKpis(any(), any()) } throws IllegalStateException()
         }
 
         val expectedResultPath = fileSystem.getPath("$toolName-result.json").toAbsolutePath()
@@ -84,11 +81,13 @@ class TransformToolResultCommandTest : KoinTest {
         val toolName = SupportedTool.Occmd.name
         declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
-        val transformer = declareMock<RawKpiTransformer>()
+        val transformer = declareMock<RawKpiTransformer>{
+            every { getRawKpis(any(), any()) } returns listOf()
+        }
         val strictCommandInput = if (expectedStrict) "--strict" else ""
         TransformToolResultCommand().test("$strictCommandInput -t $toolName")
 
-        Mockito.verify(transformer,times(1)).getRawKpis(any(), eq(expectedStrict))
+        verify(exactly = 1) { transformer.getRawKpis(any(), eq(expectedStrict)) }
     }
 
     @Test
@@ -99,8 +98,7 @@ class TransformToolResultCommandTest : KoinTest {
         val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
         val transformer = declareMock<RawKpiTransformer> {
-            given(getRawKpis(any(), anyBoolean()))
-                .willReturn(listOf())
+            every { getRawKpis(any(), any()) } returns listOf()
         }
 
         val expectedResultPath = fileSystem.getPath("$toolName-result.json").toAbsolutePath()
@@ -111,7 +109,7 @@ class TransformToolResultCommandTest : KoinTest {
         assertTrue { fileSystem.provider().exists(expectedResultPath) }
         assertEquals("[]", expectedResultPath.readText())
 
-        Mockito.verify(transformer,times(1)).getRawKpis(any(), anyBoolean())
+        verify(exactly = 1) { transformer.getRawKpis(any(), any()) }
     }
 
     @Test
@@ -126,8 +124,7 @@ class TransformToolResultCommandTest : KoinTest {
         val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
         declareMock<RawKpiTransformer> {
-            given(getRawKpis(any(), anyBoolean()))
-                .willReturn(resultList)
+            every { getRawKpis(any(), any()) } returns resultList
         }
 
         TransformToolResultCommand().test("-t $toolName")
@@ -144,7 +141,7 @@ class TransformToolResultCommandTest : KoinTest {
     fun testTransform_UseOutputPath(toolName: String, output: String, expectedFilePath: String) {
 
         val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
-        declareMock<RawKpiTransformer> { given(getRawKpis(any(), anyBoolean())).willReturn(listOf()) }
+        declareMock<RawKpiTransformer> { every { getRawKpis(any(), any()) } returns listOf() }
 
         TransformToolResultCommand().test("-t $toolName -o $output")
 
@@ -155,26 +152,28 @@ class TransformToolResultCommandTest : KoinTest {
     @ParameterizedTest
     @MethodSource("inputTestSource")
     fun testTransform_MultipleInputsSplit(inputArg: String, expectedInputs: List<String>) {
-        val toolName = SupportedTool.Occmd.name
+        val toolName = "toolA"
 
         declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
-        val transformer = declareMock<RawKpiTransformer>()
+        val transformer = declareMock<RawKpiTransformer>{
+            every { getRawKpis(any(), any()) } returns listOf()
+        }
         TransformToolResultCommand().test("-t $toolName $inputArg")
 
-        val options = TransformerOptions(SupportedTool.Occmd, inputFiles = expectedInputs)
-        Mockito.verify(transformer, times(1)).getRawKpis(eq(options), anyBoolean())
+        val options = TransformerOptions(toolName, inputFiles = expectedInputs)
+        verify(exactly = 1) { transformer.getRawKpis(eq(options), any()) }
     }
 
     companion object{
         @JvmStatic
         fun outputTestSource(): List<Arguments> {
-            val toolName = "Occmd"
+            val toolName = "toolA"
             return listOf(
-                arguments("Occmd", ".", "/work/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
-                arguments("Occmd", "dir", "/work/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
-                arguments("Occmd", "/other/dir", "/other/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
+                arguments("toolA", ".", "/work/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
+                arguments("toolA", "dir", "/work/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
+                arguments("toolA", "/other/dir", "/other/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
                 // This is a misuse, but it should work nether the less.
-                arguments("Occmd", "/file.txt", "/file.txt/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}")
+                arguments("toolA", "/file.txt", "/file.txt/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}")
             )
         }
 

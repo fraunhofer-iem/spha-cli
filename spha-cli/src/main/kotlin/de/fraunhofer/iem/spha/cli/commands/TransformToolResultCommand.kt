@@ -40,13 +40,8 @@ internal class TransformToolResultCommand : SphaToolCommandBase(name = "transfor
     @OptIn(ExperimentalSerializationApi::class)
     override fun run() {
         super.run()
-
-        val tool = SupportedTool.fromName(toolName)
-
-        val result = transformer.getRawKpis(TransformerOptions(tool, inputFiles), strict)
-
+        val result = transformer.getRawKpis(TransformerOptions(toolName, inputFiles), strict)
         val resultPath = getResultFilePath()
-
         fileSystem.provider().newOutputStream(resultPath).use {
             Logger.trace{ "Storing result to '$resultPath'" }
             Json.encodeToStream(result, it)

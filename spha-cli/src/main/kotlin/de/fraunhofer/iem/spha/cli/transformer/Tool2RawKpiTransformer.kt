@@ -1,7 +1,9 @@
 package de.fraunhofer.iem.spha.cli.transformer
 
 import de.fraunhofer.iem.kpiCalculator.adapter.AdapterResult
-import de.fraunhofer.iem.kpiCalculator.adapter.tools.SupportedTool
+import de.fraunhofer.iem.kpiCalculator.adapter.tools.ToolNotFoundException
+import de.fraunhofer.iem.kpiCalculator.adapter.tools.trivy.TrivyAdapter
+import de.fraunhofer.iem.kpiCalculator.model.adapter.trivy.TrivyDto
 import de.fraunhofer.iem.kpiCalculator.model.kpi.RawValueKpi
 import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -11,7 +13,7 @@ import java.io.InputStream
 import java.nio.file.FileSystem
 
 data class TransformerOptions(
-    val tool : SupportedTool,
+    val tool : String,
     val inputFiles : List<String>? = null
 )
 
@@ -27,21 +29,25 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent{
     override fun getRawKpis(options: TransformerOptions, strictMode: Boolean): Collection<RawValueKpi> {
 
         val result : Collection<AdapterResult> = when (options.tool) {
-            SupportedTool.Occmd -> {
-                TODO()
-//                val adapterInput : OccmdDto = OccmdAdapter.createInputFrom(input)
+//            "occmd" -> {
+//                val adapterInput: OccmdDto = OccmdAdapter.createInputFrom(input)
 //                OccmdAdapter.transformDataToKpi(adapterInput)
-            }
-//            SupportedTool.Trivy ->{
-//                getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
-//                    val adapterInput : TrivyDto = TrivyAdapter.dtoFromJson(it)
-//                    TrivyAdapter.transformDataToKpi(adapterInput)
-//                }
 //            }
-            else -> TODO("Tool ${options.tool} is not yet supported.")
+            "trivy" -> {
+                getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
+                    val adapterInput: TrivyDto = TrivyAdapter.dtoFromJson(it)
+                    return@use TrivyAdapter.transformDataToKpi(adapterInput)
+                }
+            }
+
+            else -> throw ToolNotFoundException("Tool ${options.tool} is not yet supported.")
         }
 
-        val rawKpis = result.filterIsInstance<RawValueKpi>()
+        val rawKpis = result.mapNotNull {
+            if (it !is AdapterResult.Success)
+                return@mapNotNull null
+            return@mapNotNull it.rawValueKpi
+        }
 
         // If we have unequal counts, we know that adapter returned faulted elements. Thus, we throw in strict mode.
         if (strictMode && rawKpis.count() != result.count()){
@@ -66,5 +72,3 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent{
         return _fileSystem.provider().newInputStream(_fileSystem.getPath(inputFiles.first()))
     }
 }
-
-
