@@ -3,12 +3,11 @@ package de.fraunhofer.iem.spha.cli.commands
 import com.github.ajalt.clikt.testing.test
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
-import de.fraunhofer.iem.kpiCalculator.adapter.tools.SupportedTool
-import de.fraunhofer.iem.kpiCalculator.adapter.tools.ToolNotFoundException
 import de.fraunhofer.iem.kpiCalculator.model.kpi.KpiId
 import de.fraunhofer.iem.kpiCalculator.model.kpi.RawValueKpi
 import de.fraunhofer.iem.spha.cli.appModules
 import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
+import de.fraunhofer.iem.spha.cli.transformer.ToolNotFoundException
 import de.fraunhofer.iem.spha.cli.transformer.TransformerOptions
 import io.mockk.every
 import io.mockk.mockkClass
@@ -59,7 +58,7 @@ class TransformToolResultCommandTest : KoinTest {
     @Test
     fun testTransform_TransformerInternal_Throws() {
 
-        val toolName = SupportedTool.Occmd.name
+        val toolName = "occmd"
 
         val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
@@ -78,10 +77,10 @@ class TransformToolResultCommandTest : KoinTest {
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
     fun testTransform_StrictModeApplied(expectedStrict: Boolean) {
-        val toolName = SupportedTool.Occmd.name
+        val toolName = "occmd"
         declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
-        val transformer = declareMock<RawKpiTransformer>{
+        val transformer = declareMock<RawKpiTransformer> {
             every { getRawKpis(any(), any()) } returns listOf()
         }
         val strictCommandInput = if (expectedStrict) "--strict" else ""
@@ -93,7 +92,7 @@ class TransformToolResultCommandTest : KoinTest {
     @Test
     fun testTransform_ResultFileOverwrite() {
 
-        val toolName = SupportedTool.Occmd.name
+        val toolName = "occmd"
 
         val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
@@ -115,11 +114,12 @@ class TransformToolResultCommandTest : KoinTest {
     @Test
     fun testTransform_ResultFileSerialize() {
 
-        val toolName = SupportedTool.Occmd.name
+        val toolName = "occmd"
 
         val resultList = listOf(
             RawValueKpi(KpiId.SECRETS, 100),
-            RawValueKpi(KpiId.SECURITY, 1))
+            RawValueKpi(KpiId.SECURITY, 1)
+        )
 
         val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
@@ -155,7 +155,7 @@ class TransformToolResultCommandTest : KoinTest {
         val toolName = "toolA"
 
         declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
-        val transformer = declareMock<RawKpiTransformer>{
+        val transformer = declareMock<RawKpiTransformer> {
             every { getRawKpis(any(), any()) } returns listOf()
         }
         TransformToolResultCommand().test("-t $toolName $inputArg")
@@ -164,14 +164,18 @@ class TransformToolResultCommandTest : KoinTest {
         verify(exactly = 1) { transformer.getRawKpis(eq(options), any()) }
     }
 
-    companion object{
+    companion object {
         @JvmStatic
         fun outputTestSource(): List<Arguments> {
             val toolName = "toolA"
             return listOf(
                 arguments("toolA", ".", "/work/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
                 arguments("toolA", "dir", "/work/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
-                arguments("toolA", "/other/dir", "/other/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
+                arguments(
+                    "toolA",
+                    "/other/dir",
+                    "/other/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"
+                ),
                 // This is a misuse, but it should work nether the less.
                 arguments("toolA", "/file.txt", "/file.txt/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}")
             )

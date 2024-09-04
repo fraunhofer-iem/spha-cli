@@ -81,7 +81,7 @@ class Tool2RawKpiTransformerTest : KoinTest {
     @Test
     fun getRawKpis_Trivy() {
         val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
-        fileSystem.provider().newOutputStream(fileSystem.getPath("a")).use {  }
+        fileSystem.provider().newOutputStream(fileSystem.getPath("a")).use { }
 
         val trivyVulns = listOf(
             VulnerabilityDto("A", "1", 1.0),
@@ -96,6 +96,6 @@ class Tool2RawKpiTransformerTest : KoinTest {
         assertEquals(2, kpis.count())
 
         verify(exactly = 1) { TrivyAdapter.dtoFromJson(any()) }
-        verify(exactly = 1) { TrivyAdapter.transformDataToKpi(eq(TrivyDto(trivyVulns))) }
+        verify(exactly = 1) { TrivyAdapter.transformDataToKpi(eq(listOf(TrivyDto(trivyVulns)))) }
     }
 }

@@ -282,4 +282,7 @@ gradle-app.setting
 # Java heap dump
 *.hprof
 
+### MAC Stuff ###
+.DS_Store
+
 # End of https://www.toptal.com/developers/gitignore/api/kotlin,gradle,intellij,intellij+iml,intellij+all

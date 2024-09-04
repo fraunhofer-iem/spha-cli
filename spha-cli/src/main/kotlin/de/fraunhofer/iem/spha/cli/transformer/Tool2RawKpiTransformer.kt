@@ -1,7 +1,6 @@
 package de.fraunhofer.iem.spha.cli.transformer
 
 import de.fraunhofer.iem.kpiCalculator.adapter.AdapterResult
-import de.fraunhofer.iem.kpiCalculator.adapter.tools.ToolNotFoundException
 import de.fraunhofer.iem.kpiCalculator.adapter.tools.trivy.TrivyAdapter
 import de.fraunhofer.iem.kpiCalculator.model.adapter.trivy.TrivyDto
 import de.fraunhofer.iem.kpiCalculator.model.kpi.RawValueKpi
@@ -12,9 +11,11 @@ import org.koin.core.component.inject
 import java.io.InputStream
 import java.nio.file.FileSystem
 
-internal interface RawKpiTransformer {
-    fun getRawKpis(options: TransformerOptions, strictMode: Boolean) : Collection<RawValueKpi>
+internal fun interface RawKpiTransformer {
+    fun getRawKpis(options: TransformerOptions, strictMode: Boolean): Collection<RawValueKpi>
 }
+
+class ToolNotFoundException(message: String) : Exception(message)
 
 internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
 
@@ -32,7 +33,7 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
                 getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
                     _logger.info { "Selected supported tool: Trivy" }
                     val adapterInput: TrivyDto = TrivyAdapter.dtoFromJson(it)
-                    return@use TrivyAdapter.transformDataToKpi(adapterInput)
+                    return@use TrivyAdapter.transformDataToKpi(listOf(adapterInput))
                 }
             }
 
@@ -54,8 +55,8 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
     }
 
     internal fun getSingleInputStreamFromInputFile(inputFiles: List<String>?, strictMode: Boolean): InputStream {
-        if (inputFiles.isNullOrEmpty()) {
-            throw IllegalStateException("No input files specified.")
+        check(!inputFiles.isNullOrEmpty()) {
+            "No input files specified."
         }
 
         if (inputFiles.count() > 1) {
