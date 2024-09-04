@@ -12,6 +12,12 @@ import de.fraunhofer.iem.spha.cli.transformer.TransformerOptions
 import io.mockk.every
 import io.mockk.mockkClass
 import io.mockk.verify
+import java.nio.file.FileSystem
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -26,28 +32,20 @@ import org.koin.test.junit5.KoinTestExtension
 import org.koin.test.junit5.mock.MockProviderExtension
 import org.koin.test.mock.declare
 import org.koin.test.mock.declareMock
-import java.nio.file.FileSystem
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
-
 
 class TransformToolResultCommandTest : KoinTest {
 
     @JvmField
     @RegisterExtension
-    val koinTestRule = KoinTestExtension.create {
-        printLogger(Level.DEBUG)
-        modules(appModules)
-    }
+    val koinTestRule =
+        KoinTestExtension.create {
+            printLogger(Level.DEBUG)
+            modules(appModules)
+        }
 
     @JvmField
     @RegisterExtension
-    val mockProvider = MockProviderExtension.create { clazz ->
-        mockkClass(clazz)
-    }
+    val mockProvider = MockProviderExtension.create { clazz -> mockkClass(clazz) }
 
     @Test
     fun testTransform_ToolDoesNotExists_Throws() {
@@ -60,7 +58,8 @@ class TransformToolResultCommandTest : KoinTest {
 
         val toolName = "occmd"
 
-        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
+        val fileSystem =
+            declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
         declareMock<RawKpiTransformer> {
             every { getRawKpis(any(), any()) } throws IllegalStateException()
@@ -80,9 +79,8 @@ class TransformToolResultCommandTest : KoinTest {
         val toolName = "occmd"
         declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
-        val transformer = declareMock<RawKpiTransformer> {
-            every { getRawKpis(any(), any()) } returns listOf()
-        }
+        val transformer =
+            declareMock<RawKpiTransformer> { every { getRawKpis(any(), any()) } returns listOf() }
         val strictCommandInput = if (expectedStrict) "--strict" else ""
         TransformToolResultCommand().test("$strictCommandInput -t $toolName")
 
@@ -94,11 +92,11 @@ class TransformToolResultCommandTest : KoinTest {
 
         val toolName = "occmd"
 
-        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
+        val fileSystem =
+            declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
-        val transformer = declareMock<RawKpiTransformer> {
-            every { getRawKpis(any(), any()) } returns listOf()
-        }
+        val transformer =
+            declareMock<RawKpiTransformer> { every { getRawKpis(any(), any()) } returns listOf() }
 
         val expectedResultPath = fileSystem.getPath("$toolName-result.json").toAbsolutePath()
         expectedResultPath.writeText("someJunk...")
@@ -116,23 +114,20 @@ class TransformToolResultCommandTest : KoinTest {
 
         val toolName = "occmd"
 
-        val resultList = listOf(
-            RawValueKpi(KpiId.SECRETS, 100),
-            RawValueKpi(KpiId.SECURITY, 1)
-        )
+        val resultList = listOf(RawValueKpi(KpiId.SECRETS, 100), RawValueKpi(KpiId.SECURITY, 1))
 
-        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
+        val fileSystem =
+            declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
-        declareMock<RawKpiTransformer> {
-            every { getRawKpis(any(), any()) } returns resultList
-        }
+        declareMock<RawKpiTransformer> { every { getRawKpis(any(), any()) } returns resultList }
 
         TransformToolResultCommand().test("-t $toolName")
 
         val expectedResultPath = fileSystem.getPath("$toolName-result.json").toAbsolutePath()
 
         // Read in the written file and check if it matches the result
-        val actualRawKpis = Json.decodeFromString<Collection<RawValueKpi>>(expectedResultPath.readText())
+        val actualRawKpis =
+            Json.decodeFromString<Collection<RawValueKpi>>(expectedResultPath.readText())
         assertEquals(actualRawKpis, resultList)
     }
 
@@ -148,16 +143,14 @@ class TransformToolResultCommandTest : KoinTest {
         assertTrue { fileSystem.provider().exists(fileSystem.getPath(expectedFilePath)) }
     }
 
-
     @ParameterizedTest
     @MethodSource("inputTestSource")
     fun testTransform_MultipleInputsSplit(inputArg: String, expectedInputs: List<String>) {
         val toolName = "toolA"
 
         declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
-        val transformer = declareMock<RawKpiTransformer> {
-            every { getRawKpis(any(), any()) } returns listOf()
-        }
+        val transformer =
+            declareMock<RawKpiTransformer> { every { getRawKpis(any(), any()) } returns listOf() }
         TransformToolResultCommand().test("-t $toolName $inputArg")
 
         val options = TransformerOptions(toolName, inputFiles = expectedInputs)
@@ -169,15 +162,27 @@ class TransformToolResultCommandTest : KoinTest {
         fun outputTestSource(): List<Arguments> {
             val toolName = "toolA"
             return listOf(
-                arguments("toolA", ".", "/work/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
-                arguments("toolA", "dir", "/work/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"),
+                arguments(
+                    "toolA",
+                    ".",
+                    "/work/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}",
+                ),
+                arguments(
+                    "toolA",
+                    "dir",
+                    "/work/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}",
+                ),
                 arguments(
                     "toolA",
                     "/other/dir",
-                    "/other/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}"
+                    "/other/dir/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}",
                 ),
                 // This is a misuse, but it should work nether the less.
-                arguments("toolA", "/file.txt", "/file.txt/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}")
+                arguments(
+                    "toolA",
+                    "/file.txt",
+                    "/file.txt/$toolName${TransformToolResultCommand.RESULT_FILE_SUFFIX}",
+                ),
             )
         }
 
@@ -186,7 +191,10 @@ class TransformToolResultCommandTest : KoinTest {
             return listOf(
                 arguments("-i input.json", listOf("input.json")),
                 arguments("--inputFile \"a b.json\"", listOf("a b.json")),
-                arguments("-i a.json --inputFile b.json -i \"d e.json\"", listOf("a.json", "b.json", "d e.json")),
+                arguments(
+                    "-i a.json --inputFile b.json -i \"d e.json\"",
+                    listOf("a.json", "b.json", "d e.json"),
+                ),
             )
         }
     }

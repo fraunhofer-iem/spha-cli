@@ -1,21 +1,17 @@
-plugins {
-    kotlin("jvm") version "2.0.10"
-}
+plugins { kotlin("jvm") version "2.0.10" }
 
 group = "de.fraunhofer.iem"
+
 version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
+repositories { mavenCentral() }
 
-dependencies {
-    testImplementation(kotlin("test"))
-}
+dependencies { testImplementation(kotlin("test")) }
 
-tasks.test {
-    useJUnitPlatform()
-}
-kotlin {
-    jvmToolchain(21)
-}
+tasks.register("ktfmtCheck") { dependsOn(gradle.includedBuild("spha-cli").task(":ktfmtCheck")) }
+
+tasks.register("ktfmtFormat") { dependsOn(gradle.includedBuild("spha-cli").task(":ktfmtFormat")) }
+
+tasks.test { useJUnitPlatform() }
+
+kotlin { jvmToolchain(21) }
