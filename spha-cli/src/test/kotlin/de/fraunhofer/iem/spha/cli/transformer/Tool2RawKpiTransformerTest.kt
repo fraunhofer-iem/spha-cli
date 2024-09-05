@@ -11,6 +11,9 @@ import io.mockk.every
 import io.mockk.mockkClass
 import io.mockk.mockkObject
 import io.mockk.verify
+import java.nio.file.FileSystem
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
@@ -20,55 +23,55 @@ import org.koin.test.KoinTest
 import org.koin.test.junit5.KoinTestExtension
 import org.koin.test.junit5.mock.MockProviderExtension
 import org.koin.test.mock.declare
-import java.nio.file.FileSystem
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class Tool2RawKpiTransformerTest : KoinTest {
     @JvmField
     @RegisterExtension
-    val koinTestRule = KoinTestExtension.create {
-        printLogger(Level.DEBUG)
-        modules(appModules)
-    }
+    val koinTestRule =
+        KoinTestExtension.create {
+            printLogger(Level.DEBUG)
+            modules(appModules)
+        }
 
     @JvmField
     @RegisterExtension
-    val mockProvider = MockProviderExtension.create { clazz ->
-        mockkClass(clazz)
-    }
+    val mockProvider = MockProviderExtension.create { clazz -> mockkClass(clazz) }
 
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
     fun getSingleInputStreamFromInputFile_NullInput_Throws(strict: Boolean) {
         val command = Tool2RawKpiTransformer()
-        assertThrows<IllegalStateException> { command.getSingleInputStreamFromInputFile(null, strict) }
+        assertThrows<IllegalStateException> {
+            command.getSingleInputStreamFromInputFile(null, strict)
+        }
     }
 
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
     fun getSingleInputStreamFromInputFile_Empty_Throws(strict: Boolean) {
         val command = Tool2RawKpiTransformer()
-        assertThrows<IllegalStateException> { command.getSingleInputStreamFromInputFile(listOf(), strict) }
+        assertThrows<IllegalStateException> {
+            command.getSingleInputStreamFromInputFile(listOf(), strict)
+        }
     }
 
     @Test
     fun getSingleInputStreamFromInputFile_MultipleInputs_Strict_Throws() {
-        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
-        fileSystem.provider().newOutputStream(fileSystem.getPath("a")).use {
-            it.write(123)
-        }
-        fileSystem.provider().newOutputStream(fileSystem.getPath("b")).use {
-            it.write(789)
-        }
+        val fileSystem =
+            declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
+        fileSystem.provider().newOutputStream(fileSystem.getPath("a")).use { it.write(123) }
+        fileSystem.provider().newOutputStream(fileSystem.getPath("b")).use { it.write(789) }
 
         val command = Tool2RawKpiTransformer()
-        assertThrows<StrictModeConstraintFailed> { command.getSingleInputStreamFromInputFile(listOf("a", "b"), true) }
+        assertThrows<StrictModeConstraintFailed> {
+            command.getSingleInputStreamFromInputFile(listOf("a", "b"), true)
+        }
     }
 
     @Test
     fun getSingleInputStreamFromInputFile_MultipleInputs_NonStrict_TakeFirst() {
-        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
+        val fileSystem =
+            declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
         fileSystem.provider().newOutputStream(fileSystem.getPath("a")).use { it.write(123) }
         fileSystem.provider().newOutputStream(fileSystem.getPath("b")).use { it.write(789) }
 
@@ -80,13 +83,11 @@ class Tool2RawKpiTransformerTest : KoinTest {
 
     @Test
     fun getRawKpis_Trivy() {
-        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
-        fileSystem.provider().newOutputStream(fileSystem.getPath("a")).use {  }
+        val fileSystem =
+            declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
+        fileSystem.provider().newOutputStream(fileSystem.getPath("a")).use {}
 
-        val trivyVulns = listOf(
-            VulnerabilityDto("A", "1", 1.0),
-            VulnerabilityDto("B", "2", 2.3),
-        )
+        val trivyVulns = listOf(VulnerabilityDto("A", "1", 1.0), VulnerabilityDto("B", "2", 2.3))
         mockkObject(TrivyAdapter)
         every { TrivyAdapter.dtoFromJson(any()) } returns TrivyDto(trivyVulns)
 
@@ -96,6 +97,6 @@ class Tool2RawKpiTransformerTest : KoinTest {
         assertEquals(2, kpis.count())
 
         verify(exactly = 1) { TrivyAdapter.dtoFromJson(any()) }
-        verify(exactly = 1) { TrivyAdapter.transformDataToKpi(eq(TrivyDto(trivyVulns))) }
+        verify(exactly = 1) { TrivyAdapter.transformDataToKpi(eq(listOf(TrivyDto(trivyVulns)))) }
     }
 }

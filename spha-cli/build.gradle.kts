@@ -1,17 +1,17 @@
 plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.serialization)
+    alias(libs.plugins.ktfmt)
     application
 }
 
 group = "de.fraunhofer.iem.spha"
+
 version = "0.0.2-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
+repositories { mavenCentral() }
 
-dependencies{
+dependencies {
     implementation(libs.bundles.kpiCalculator)
 
     implementation(libs.kotlin.cli)
@@ -30,13 +30,14 @@ dependencies{
     testImplementation(libs.test.junit5.params)
 }
 
-tasks.test {
-    useJUnitPlatform()
+ktfmt {
+    // KotlinLang style - 4 space indentation - From kotlinlang.org/docs/coding-conventions.html
+    kotlinLangStyle()
 }
 
-application{
-    mainClass = "de.fraunhofer.iem.spha.cli.MainKt"
-}
+tasks.test { useJUnitPlatform() }
+
+application { mainClass = "de.fraunhofer.iem.spha.cli.MainKt" }
 
 kotlin {
     compilerOptions {
@@ -44,4 +45,3 @@ kotlin {
         apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
     }
 }
-
