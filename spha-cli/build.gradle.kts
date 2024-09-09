@@ -1,13 +1,13 @@
 plugins {
+    jacoco
     alias(libs.plugins.kotlin)
     alias(libs.plugins.serialization)
     alias(libs.plugins.ktfmt)
+    alias(libs.plugins.versions)
     application
 }
 
 group = "de.fraunhofer.iem.spha"
-
-version = "0.0.2-SNAPSHOT"
 
 repositories { mavenCentral() }
 
@@ -36,6 +36,18 @@ ktfmt {
 }
 
 tasks.test { useJUnitPlatform() }
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports { xml.required = true }
+}
+
+tasks.register("jacocoReport") {
+    description = "Generates code coverage reports for all test tasks."
+    group = "Reporting"
+
+    dependsOn(tasks.withType<JacocoReport>())
+}
 
 application { mainClass = "de.fraunhofer.iem.spha.cli.MainKt" }
 
