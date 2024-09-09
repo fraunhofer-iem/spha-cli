@@ -1,17 +1,19 @@
-plugins { kotlin("jvm") version "2.0.10" }
-
-group = "de.fraunhofer.iem"
-
-version = "1.0-SNAPSHOT"
-
 repositories { mavenCentral() }
 
-dependencies { testImplementation(kotlin("test")) }
+tasks.register("ktfmtCheck") {
+    group = "formatting"
+    description = "Checks code formatting."
+    dependsOn(gradle.includedBuild("spha-cli").task(":ktfmtCheck"))
+}
 
-tasks.register("ktfmtCheck") { dependsOn(gradle.includedBuild("spha-cli").task(":ktfmtCheck")) }
+tasks.register("ktfmtFormat") {
+    group = "formatting"
+    description = "Applies ktfmt's formatting rules."
+    dependsOn(gradle.includedBuild("spha-cli").task(":ktfmtFormat"))
+}
 
-tasks.register("ktfmtFormat") { dependsOn(gradle.includedBuild("spha-cli").task(":ktfmtFormat")) }
-
-tasks.test { useJUnitPlatform() }
-
-kotlin { jvmToolchain(21) }
+tasks.register("test") {
+    group = "testing"
+    description = "Runs tests."
+    dependsOn(gradle.includedBuild("spha-cli").task(":test"))
+}

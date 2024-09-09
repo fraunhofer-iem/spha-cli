@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.0.10"
+kotlin = "2.0.20"
 kotlinxSerialization = "1.7.1"
 kotlinCli = "4.4.0"
 kotlinLogging = "7.0.0"
@@ -10,6 +10,7 @@ jimfs = "1.3.0"
 apache-commoms = "3.16.0"
 junit = "5.11.0"
 ktfmt = "0.20.1"
+versions = "0.51.0"
 
 [libraries]
 # KPI calculator
@@ -38,6 +39,7 @@ test-junit5-params = { module = "org.junit.jupiter:junit-jupiter-params", versio
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
+versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }
 
 [bundles]
 kpiCalculator = ["kpi-calculator-adapter", "kpi-calculator-core", "kpi-calculator-model"]
