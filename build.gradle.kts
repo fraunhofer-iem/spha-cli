@@ -13,7 +13,31 @@ tasks.register("ktfmtFormat") {
 }
 
 tasks.register("test") {
-    group = "testing"
+    group = "verification"
     description = "Runs tests."
     dependsOn(gradle.includedBuild("spha-cli").task(":test"))
+}
+
+tasks.register("dependencyUpdates") {
+    group = "dependencies"
+    description = "Prints possible dependency updates."
+    dependsOn(gradle.includedBuild("spha-cli").task(":dependencyUpdates"))
+}
+
+tasks.register("clean") {
+    group = "build"
+    description = "Removes all builds."
+    dependsOn(gradle.includedBuild("spha-cli").task(":clean"))
+}
+
+tasks.register("build") {
+    group = "build"
+    description = "Build the service"
+    dependsOn(gradle.includedBuild("spha-cli").task(":build"))
+}
+
+tasks.register("assemble") {
+    group = "build"
+    description = "Assembles everything into a deployable format."
+    dependsOn(gradle.includedBuild("spha-cli").task(":assemble"))
 }
