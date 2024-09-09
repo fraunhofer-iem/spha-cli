@@ -37,7 +37,7 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
                     getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
                         _logger.info { "Selected supported tool: Trivy" }
                         val adapterInput: TrivyDto = TrivyAdapter.dtoFromJson(it)
-                        return@use TrivyAdapter.transformDataToKpi(listOf(adapterInput))
+                        return@use TrivyAdapter.transformDataToKpi(adapterInput)
                     }
                 }
 
