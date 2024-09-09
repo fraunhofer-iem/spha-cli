@@ -5,8 +5,8 @@ import de.fraunhofer.iem.kpiCalculator.adapter.tools.trivy.TrivyAdapter
 import de.fraunhofer.iem.kpiCalculator.model.adapter.trivy.TrivyDto
 import de.fraunhofer.iem.kpiCalculator.model.kpi.RawValueKpi
 import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
+import de.fraunhofer.iem.spha.cli.util.InputHelper.getSingleInputStreamFromInputFile
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.InputStream
 import java.nio.file.FileSystem
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -34,11 +34,12 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
                 //                OccmdAdapter.transformDataToKpi(adapterInput)
                 //            }
                 "trivy" -> {
-                    getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
-                        _logger.info { "Selected supported tool: Trivy" }
-                        val adapterInput: TrivyDto = TrivyAdapter.dtoFromJson(it)
-                        return@use TrivyAdapter.transformDataToKpi(listOf(adapterInput))
-                    }
+                    getSingleInputStreamFromInputFile(_fileSystem, options.inputFiles, strictMode)
+                        .use {
+                            _logger.info { "Selected supported tool: Trivy" }
+                            val adapterInput: TrivyDto = TrivyAdapter.dtoFromJson(it)
+                            return@use TrivyAdapter.transformDataToKpi(listOf(adapterInput))
+                        }
                 }
 
                 else -> throw ToolNotFoundException("Tool ${options.tool} is not yet supported.")
@@ -57,23 +58,5 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
         }
 
         return rawKpis
-    }
-
-    internal fun getSingleInputStreamFromInputFile(
-        inputFiles: List<String>?,
-        strictMode: Boolean,
-    ): InputStream {
-        check(!inputFiles.isNullOrEmpty()) { "No input files specified." }
-
-        if (inputFiles.count() > 1) {
-            if (strictMode) {
-                throw StrictModeConstraintFailed("Expected only one input file.")
-            }
-            _logger.warn {
-                "Expected only one input file. But go #${inputFiles.count()}. Will use first entry."
-            }
-        }
-
-        return _fileSystem.provider().newInputStream(_fileSystem.getPath(inputFiles.first()))
     }
 }
