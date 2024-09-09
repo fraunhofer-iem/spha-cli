@@ -12,12 +12,6 @@ import de.fraunhofer.iem.spha.cli.transformer.TransformerOptions
 import io.mockk.every
 import io.mockk.mockkClass
 import io.mockk.verify
-import java.nio.file.FileSystem
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -32,6 +26,12 @@ import org.koin.test.junit5.KoinTestExtension
 import org.koin.test.junit5.mock.MockProviderExtension
 import org.koin.test.mock.declare
 import org.koin.test.mock.declareMock
+import java.nio.file.FileSystem
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class TransformToolResultCommandTest : KoinTest {
 
