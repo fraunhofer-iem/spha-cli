@@ -3,12 +3,12 @@ package de.fraunhofer.iem.spha.cli.commands
 import com.github.ajalt.clikt.testing.test
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
-import de.fraunhofer.iem.kpiCalculator.core.KpiCalculator
-import de.fraunhofer.iem.kpiCalculator.model.kpi.KpiId
-import de.fraunhofer.iem.kpiCalculator.model.kpi.KpiStrategyId
-import de.fraunhofer.iem.kpiCalculator.model.kpi.RawValueKpi
-import de.fraunhofer.iem.kpiCalculator.model.kpi.hierarchy.*
 import de.fraunhofer.iem.spha.cli.appModules
+import de.fraunhofer.iem.spha.core.KpiCalculator
+import de.fraunhofer.iem.spha.model.kpi.KpiId
+import de.fraunhofer.iem.spha.model.kpi.KpiStrategyId
+import de.fraunhofer.iem.spha.model.kpi.RawValueKpi
+import de.fraunhofer.iem.spha.model.kpi.hierarchy.*
 import io.mockk.every
 import io.mockk.mockkClass
 import io.mockk.mockkObject
@@ -48,7 +48,9 @@ class CalculateKpiCommandTest : KoinTest {
             declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
         fileSystem.getPath("./distract.json").writeText("{ \"someKey\" : 123 }")
-        fileSystem.getPath("./distract.txt").writeText("[{ \"kind\" : \"CHECKED_IN_BINARIES\", \"score\" : 100 }]")
+        fileSystem
+            .getPath("./distract.txt")
+            .writeText("[{ \"kind\" : \"CHECKED_IN_BINARIES\", \"score\" : 100 }]")
 
         val expectedResult =
             KpiResultHierarchy.create(

@@ -1,10 +1,10 @@
 package de.fraunhofer.iem.spha.cli.transformer
 
-import de.fraunhofer.iem.kpiCalculator.adapter.AdapterResult
-import de.fraunhofer.iem.kpiCalculator.adapter.tools.trivy.TrivyAdapter
-import de.fraunhofer.iem.kpiCalculator.model.adapter.trivy.TrivyDto
-import de.fraunhofer.iem.kpiCalculator.model.kpi.RawValueKpi
+import de.fraunhofer.iem.spha.adapter.AdapterResult
+import de.fraunhofer.iem.spha.adapter.tools.trivy.TrivyAdapter
 import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
+import de.fraunhofer.iem.spha.model.adapter.trivy.TrivyDto
+import de.fraunhofer.iem.spha.model.kpi.RawValueKpi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
 import java.nio.file.FileSystem
