@@ -1,7 +1,8 @@
 package de.fraunhofer.iem.spha.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.NoOpCliktCommand
+import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -18,42 +19,42 @@ import org.koin.dsl.module
 import org.slf4j.simple.SimpleLogger
 
 internal val appModules = module {
-    single<RawKpiTransformer> { Tool2RawKpiTransformer() }
-    single<FileSystem> { FileSystems.getDefault() }
+  single<RawKpiTransformer> { Tool2RawKpiTransformer() }
+  single<FileSystem> { FileSystems.getDefault() }
 }
 
 fun main(args: Array<String>) {
-    startKoin { modules(appModules) }
+  startKoin { modules(appModules) }
 
-    try {
-        MainSphaToolCommand().subcommands(TransformToolResultCommand()).main(args)
-    } catch (e: Exception) {
-        val logger = KotlinLogging.logger {}
-        logger.error(e, { e.message })
-        exitProcess(1)
-    }
+  try {
+    MainSphaToolCommand().subcommands(TransformToolResultCommand()).main(args)
+  } catch (e: Exception) {
+    val logger = KotlinLogging.logger {}
+    logger.error(e, { e.message })
+    exitProcess(1)
+  }
 }
 
 /**
  * The Main command of this application. Supports a global switch to enable verbose logging mode.
  */
-private class MainSphaToolCommand : NoOpCliktCommand() {
+private class MainSphaToolCommand : CliktCommand() {
 
-    val verbose by
-        option(
-                "--verbose",
-                "-v",
-                help = "When set, the application provides detailed logging. Default is unset.",
-            )
-            .flag()
+  val verbose by
+      option(
+              "--verbose",
+              "-v",
+              help = "When set, the application provides detailed logging. Default is unset.",
+          )
+          .flag()
 
-    override fun run() {
-        configureLogging()
-    }
+  override fun run() {
+    configureLogging()
+  }
 
-    private fun configureLogging() {
-        if (verbose) System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE")
-    }
+  private fun configureLogging() {
+    if (verbose) System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE")
+  }
 }
 
 /**
@@ -64,26 +65,26 @@ private class MainSphaToolCommand : NoOpCliktCommand() {
  * switch is independent to the first switch. This will cause confusion for users, which switch to
  * use.
  */
-internal abstract class SphaToolCommandBase(name: String? = null, help: String = "") :
-    CliktCommand(name = name, help = help), KoinComponent {
-    // NB: Needs to be lazy, as otherwise we initialize this variable before setting the logger
-    // configuration.
-    private val _lazyLogger = lazy { KotlinLogging.logger {} }
-    protected val Logger
-        get() = _lazyLogger.value
+internal abstract class SphaToolCommandBase(name: String? = null, val help: String = "") :
+    CliktCommand(name = name), KoinComponent {
+  override fun help(context: Context) = help
 
-    val strict by
-        option(
-                "--strict",
-                help =
-                    "When set, the application is less tolerant to unknown input formats. Default is unset.",
-            )
-            .flag()
+  // NB: Needs to be lazy, as otherwise we initialize this variable before setting the logger
+  // configuration.
+  private val _lazyLogger = lazy { KotlinLogging.logger {} }
+  protected val Logger
+    get() = _lazyLogger.value
 
-    override fun run() {
-        Logger.trace {
-            "Original command arguments: '${currentContext.originalArgv.joinToString()}}'"
-        }
-        Logger.debug { "Running command: $commandName" }
-    }
+  val strict by
+      option(
+              "--strict",
+              help =
+                  "When set, the application is less tolerant to unknown input formats. Default is unset.",
+          )
+          .flag()
+
+  override fun run() {
+    Logger.trace { "Original command arguments: '${currentContext.originalArgv.joinToString()}}'" }
+    Logger.debug { "Running command: $commandName" }
+  }
 }
