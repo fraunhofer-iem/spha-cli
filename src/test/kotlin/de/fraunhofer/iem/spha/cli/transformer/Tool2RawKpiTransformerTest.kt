@@ -2,11 +2,11 @@ package de.fraunhofer.iem.spha.cli.transformer
 
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
-import de.fraunhofer.iem.kpiCalculator.adapter.tools.trivy.TrivyAdapter
-import de.fraunhofer.iem.kpiCalculator.model.adapter.trivy.TrivyDto
-import de.fraunhofer.iem.kpiCalculator.model.adapter.vulnerability.VulnerabilityDto
+import de.fraunhofer.iem.spha.adapter.tools.trivy.TrivyAdapter
 import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
 import de.fraunhofer.iem.spha.cli.appModules
+import de.fraunhofer.iem.spha.model.adapter.trivy.TrivyDto
+import de.fraunhofer.iem.spha.model.adapter.vulnerability.VulnerabilityDto
 import io.mockk.every
 import io.mockk.mockkClass
 import io.mockk.mockkObject

@@ -11,12 +11,13 @@ apache-commoms = "3.17.0"
 junit = "5.11.0"
 ktfmt = "0.20.1"
 versions = "0.51.0"
+sphaVersion = "0.0.3"
 
 [libraries]
 # KPI calculator
-kpi-calculator-core = { module = "de.fraunhofer.iem.kpiCalculator:core" }
-kpi-calculator-model = { module = "de.fraunhofer.iem.kpiCalculator:model" }
-kpi-calculator-adapter = { module = "de.fraunhofer.iem.kpiCalculator:adapter" }
+kpi-calculator-core = { module = "de.fraunhofer.iem:spha-core", version.ref = "sphaVersion" }
+kpi-calculator-model = { module = "de.fraunhofer.iem:spha-model", version.ref = "sphaVersion" }
+kpi-calculator-adapter = { module = "de.fraunhofer.iem:spha-adapter", version.ref = "sphaVersion" }
 
 kotlin-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlin-cli = { module = "com.github.ajalt.clikt:clikt", version.ref = "kotlinCli" }
