@@ -20,22 +20,22 @@ import org.koin.dsl.module
 import org.slf4j.simple.SimpleLogger
 
 internal val appModules = module {
-  single<RawKpiTransformer> { Tool2RawKpiTransformer() }
-  single<FileSystem> { FileSystems.getDefault() }
+    single<RawKpiTransformer> { Tool2RawKpiTransformer() }
+    single<FileSystem> { FileSystems.getDefault() }
 }
 
 fun main(args: Array<String>) {
-  startKoin { modules(appModules) }
+    startKoin { modules(appModules) }
 
-  try {
-    MainSphaToolCommand()
-        .subcommands(TransformToolResultCommand(), CalculateKpiCommand())
-        .main(args)
-  } catch (e: Exception) {
-    val logger = KotlinLogging.logger {}
-    logger.error(e, { e.message })
-    exitProcess(1)
-  }
+    try {
+        MainSphaToolCommand()
+            .subcommands(TransformToolResultCommand(), CalculateKpiCommand())
+            .main(args)
+    } catch (e: Exception) {
+        val logger = KotlinLogging.logger {}
+        logger.error(e, { e.message })
+        exitProcess(1)
+    }
 }
 
 /**
@@ -43,21 +43,21 @@ fun main(args: Array<String>) {
  */
 private class MainSphaToolCommand : CliktCommand() {
 
-  val verbose by
-      option(
-              "--verbose",
-              "-v",
-              help = "When set, the application provides detailed logging. Default is unset.",
-          )
-          .flag()
+    val verbose by
+        option(
+                "--verbose",
+                "-v",
+                help = "When set, the application provides detailed logging. Default is unset.",
+            )
+            .flag()
 
-  override fun run() {
-    configureLogging()
-  }
+    override fun run() {
+        configureLogging()
+    }
 
-  private fun configureLogging() {
-    if (verbose) System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE")
-  }
+    private fun configureLogging() {
+        if (verbose) System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE")
+    }
 }
 
 /**
@@ -70,24 +70,26 @@ private class MainSphaToolCommand : CliktCommand() {
  */
 internal abstract class SphaToolCommandBase(name: String? = null, val help: String = "") :
     CliktCommand(name = name), KoinComponent {
-  override fun help(context: Context) = help
+    override fun help(context: Context) = help
 
-  // NB: Needs to be lazy, as otherwise we initialize this variable before setting the logger
-  // configuration.
-  private val _lazyLogger = lazy { KotlinLogging.logger {} }
-  protected val Logger
-    get() = _lazyLogger.value
+    // NB: Needs to be lazy, as otherwise we initialize this variable before setting the logger
+    // configuration.
+    private val _lazyLogger = lazy { KotlinLogging.logger {} }
+    protected val Logger
+        get() = _lazyLogger.value
 
-  val strict by
-      option(
-              "--strict",
-              help =
-                  "When set, the application is less tolerant to unknown input formats. Default is unset.",
-          )
-          .flag()
+    val strict by
+        option(
+                "--strict",
+                help =
+                    "When set, the application is less tolerant to unknown input formats. Default is unset.",
+            )
+            .flag()
 
-  override fun run() {
-    Logger.trace { "Original command arguments: '${currentContext.originalArgv.joinToString()}}'" }
-    Logger.debug { "Running command: $commandName" }
-  }
+    override fun run() {
+        Logger.trace {
+            "Original command arguments: '${currentContext.originalArgv.joinToString()}}'"
+        }
+        Logger.debug { "Running command: $commandName" }
+    }
 }
