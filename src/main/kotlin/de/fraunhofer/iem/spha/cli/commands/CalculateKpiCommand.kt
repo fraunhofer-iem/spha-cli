@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2024 Fraunhofer IEM. All rights reserved.
+ *
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ *
+ * SPDX-License-Identifier: MIT
+ * License-Filename: LICENSE
+ */
+
 package de.fraunhofer.iem.spha.cli.commands
 
 import com.github.ajalt.clikt.parameters.options.option
@@ -10,7 +19,13 @@ import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiHierarchy
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiResultHierarchy
 import java.nio.file.FileSystem
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.createDirectories
+import kotlin.io.path.extension
+import kotlin.io.path.inputStream
+import kotlin.io.path.outputStream
+import kotlin.io.path.walk
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
