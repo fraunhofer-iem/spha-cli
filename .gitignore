@@ -169,6 +169,7 @@ fabric.properties
 
 .idea/*
 
+!.idea/copyright
 !.idea/codeStyles
 !.idea/runConfigurations
 
