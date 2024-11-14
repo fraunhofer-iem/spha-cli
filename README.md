@@ -1,1 +1,1 @@
-# software-product-health-analyzer
+# Software Product Health Assistant
