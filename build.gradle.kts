@@ -63,7 +63,7 @@ application { mainClass = "de.fraunhofer.iem.spha.cli.MainKt" }
 
 kotlin {
     compilerOptions {
-        jvmToolchain(21)
+        jvmToolchain(22)
         apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
     }
 }
@@ -74,6 +74,8 @@ semver {
 
     // Do not let untracked files bump the version or add a "-SNAPSHOT" suffix.
     noDirtyCheck = true
+
+    groupVersionIncrements = false
 }
 
 // Only override a default version (which usually is "unspecified"), but not a custom version.
