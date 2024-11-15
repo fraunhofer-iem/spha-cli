@@ -10,8 +10,10 @@
 package de.fraunhofer.iem.spha.cli.transformer
 
 import de.fraunhofer.iem.spha.adapter.AdapterResult
+import de.fraunhofer.iem.spha.adapter.tools.osv.OsvAdapter
 import de.fraunhofer.iem.spha.adapter.tools.trivy.TrivyAdapter
 import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
+import de.fraunhofer.iem.spha.model.adapter.osv.OsvScannerDto
 import de.fraunhofer.iem.spha.model.adapter.trivy.TrivyDto
 import de.fraunhofer.iem.spha.model.kpi.RawValueKpi
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -47,6 +49,13 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
                         _logger.info { "Selected supported tool: Trivy" }
                         val adapterInput: TrivyDto = TrivyAdapter.dtoFromJson(it)
                         return@use TrivyAdapter.transformDataToKpi(adapterInput)
+                    }
+                }
+                "osv" -> {
+                    getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
+                        _logger.info { "Selected supported tool: OSV" }
+                        val adapterInput: OsvScannerDto = OsvAdapter.dtoFromJson(it)
+                        return@use OsvAdapter.transformDataToKpi(adapterInput)
                     }
                 }
 

@@ -96,7 +96,8 @@ class Tool2RawKpiTransformerTest : KoinTest {
             declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
         fileSystem.provider().newOutputStream(fileSystem.getPath("a")).use {}
 
-        val trivyVulns = listOf(VulnerabilityDto("A", "1", 1.0), VulnerabilityDto("B", "2", 2.3))
+        val trivyVulns =
+            listOf(VulnerabilityDto("A", "1", "2", 1.0), VulnerabilityDto("B", "2", "3", 2.3))
         mockkObject(TrivyAdapter)
         every { TrivyAdapter.dtoFromJson(any()) } returns TrivyDto(trivyVulns)
 
