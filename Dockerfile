@@ -25,5 +25,5 @@ WORKDIR /app
 COPY --from=build /app/build /app/build
 
 # Set the entrypoint and default command
-ENTRYPOINT ["./build/install/spha-cli/bin/spha-cli"]
+ENTRYPOINT ["/app/build/install/spha-cli/bin/spha-cli"]
 CMD ["--help"]
