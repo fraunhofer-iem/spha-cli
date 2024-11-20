@@ -16,6 +16,7 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import de.fraunhofer.iem.spha.cli.commands.CalculateKpiCommand
+import de.fraunhofer.iem.spha.cli.commands.ReportCommand
 import de.fraunhofer.iem.spha.cli.commands.TransformToolResultCommand
 import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
 import de.fraunhofer.iem.spha.cli.transformer.Tool2RawKpiTransformer
@@ -38,7 +39,7 @@ fun main(args: Array<String>) {
 
     try {
         MainSphaToolCommand()
-            .subcommands(TransformToolResultCommand(), CalculateKpiCommand())
+            .subcommands(TransformToolResultCommand(), CalculateKpiCommand(), ReportCommand())
             .main(args)
     } catch (e: Exception) {
         val logger = KotlinLogging.logger {}
