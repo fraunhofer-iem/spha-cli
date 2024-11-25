@@ -12,9 +12,11 @@ package de.fraunhofer.iem.spha.cli.transformer
 import de.fraunhofer.iem.spha.adapter.AdapterResult
 import de.fraunhofer.iem.spha.adapter.tools.osv.OsvAdapter
 import de.fraunhofer.iem.spha.adapter.tools.trivy.TrivyAdapter
+import de.fraunhofer.iem.spha.adapter.tools.trufflehog.TrufflehogAdapter
 import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
 import de.fraunhofer.iem.spha.model.adapter.osv.OsvScannerDto
 import de.fraunhofer.iem.spha.model.adapter.trivy.TrivyDto
+import de.fraunhofer.iem.spha.model.adapter.trufflehog.TrufflehogReportDto
 import de.fraunhofer.iem.spha.model.kpi.RawValueKpi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
@@ -56,6 +58,14 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
                         _logger.info { "Selected supported tool: OSV" }
                         val adapterInput: OsvScannerDto = OsvAdapter.dtoFromJson(it)
                         return@use OsvAdapter.transformDataToKpi(adapterInput)
+                    }
+                }
+                "trufflehog" -> {
+                    getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
+                        _logger.info { "Selected supported tool: Trufflehog" }
+                        val adapterInput: List<TrufflehogReportDto> =
+                            TrufflehogAdapter.dtoFromJson(it)
+                        return@use TrufflehogAdapter.transformDataToKpi(adapterInput)
                     }
                 }
 
