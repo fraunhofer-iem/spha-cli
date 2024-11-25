@@ -28,7 +28,7 @@ import org.koin.core.component.inject
 internal class ReportCommand :
     SphaToolCommandBase(
         name = "report",
-        help = "Builds a KPI hierarchy from raw values and a hierarchy definition.",
+        help = "Takes a KpiResultHierarchy and generates a human readable report from it..",
     ),
     KoinComponent {
 
