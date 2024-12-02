@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.0.21"
+kotlin = "2.1.0"
 kotlinxSerialization = "1.7.3"
 kotlinCli = "5.0.1"
 kotlinLogging = "7.0.0"
