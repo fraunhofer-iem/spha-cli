@@ -19,7 +19,10 @@ plugins {
 
 group = "de.fraunhofer.iem"
 
-repositories { mavenCentral() }
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
 
 dependencies {
     implementation(libs.bundles.kpiCalculator)
