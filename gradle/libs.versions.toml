@@ -1,8 +1,8 @@
 [versions]
-kotlin = "2.0.21"
+kotlin = "2.1.0"
 kotlinxSerialization = "1.7.3"
-kotlinCli = "5.0.1"
-kotlinLogging = "7.0.0"
+kotlinCli = "5.0.2"
+kotlinLogging = "7.0.3"
 simpleLogger = "2.0.16"
 koinDI = "4.0.0"
 mockk = "1.13.13"
@@ -11,8 +11,8 @@ apache-commoms = "3.17.0"
 junit = "5.11.3"
 ktfmt = "0.21.0"
 versions = "0.51.0"
-sphaVersion = "0.1.0"
-semver = "0.12.11"
+sphaVersion = "0.5.0"
+semver = "0.13.0"
 
 [libraries]
 # KPI calculator
