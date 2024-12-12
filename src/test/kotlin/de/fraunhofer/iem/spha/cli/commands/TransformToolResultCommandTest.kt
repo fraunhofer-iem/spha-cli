@@ -123,7 +123,7 @@ class TransformToolResultCommandTest : KoinTest {
 
         val toolName = "occmd"
 
-        val resultList = listOf(RawValueKpi(KpiId.SECRETS, 100), RawValueKpi(KpiId.SECURITY, 1))
+        val resultList = listOf(RawValueKpi(KpiId.SECRETS.name, 100), RawValueKpi(KpiId.SECURITY.name, 1))
 
         val fileSystem =
             declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
