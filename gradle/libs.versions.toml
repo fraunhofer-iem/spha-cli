@@ -12,7 +12,7 @@ junit = "5.11.3"
 ktfmt = "0.21.0"
 versions = "0.51.0"
 sphaVersion = "0.0.5"
-semver = "0.12.11"
+semver = "0.14.0"
 
 [libraries]
 # KPI calculator
