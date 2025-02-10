@@ -2,7 +2,7 @@
 kotlin = "2.0.21"
 kotlinxSerialization = "1.7.3"
 kotlinCli = "5.0.1"
-kotlinLogging = "7.0.0"
+kotlinLogging = "7.0.4"
 simpleLogger = "2.0.16"
 koinDI = "4.0.0"
 mockk = "1.13.13"
