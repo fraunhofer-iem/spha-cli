@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Fraunhofer IEM. All rights reserved.
+ * Copyright (c) 2024-2025 Fraunhofer IEM. All rights reserved.
  *
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  *
@@ -9,8 +9,8 @@
 
 package de.fraunhofer.iem.spha.cli.reporter
 
-import de.fraunhofer.iem.spha.model.kpi.KpiId
 import de.fraunhofer.iem.spha.model.kpi.KpiStrategyId
+import de.fraunhofer.iem.spha.model.kpi.KpiType
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiCalculationResult
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiResultEdge
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiResultHierarchy
@@ -22,9 +22,9 @@ import kotlin.test.assertNotNull
 class ReporterTest {
     private fun randomKpiResultNode(): KpiResultNode {
         return KpiResultNode(
-            kpiId = KpiId.SECURITY.name,
-            kpiResult = KpiCalculationResult.Success(score = 65),
-            strategyType = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
+            typeId = KpiType.SECURITY.name,
+            result = KpiCalculationResult.Success(score = 65),
+            strategy = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
             children = listOf(),
         )
     }
@@ -42,19 +42,21 @@ class ReporterTest {
         val kpiResultHierarchy =
             KpiResultHierarchy.create(
                 KpiResultNode(
-                    kpiId = KpiId.ROOT.name,
-                    kpiResult = KpiCalculationResult.Success(score = 75),
-                    strategyType = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
+                    typeId = KpiType.ROOT.name,
+                    result = KpiCalculationResult.Success(score = 75),
+                    strategy = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
                     children =
                         listOf(
                             KpiResultEdge(
                                 target =
                                     KpiResultNode(
-                                        kpiId = KpiId.SECURITY.name,
-                                        kpiResult = KpiCalculationResult.Success(score = 65),
-                                        strategyType = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
+                                        typeId = KpiType.SECURITY.name,
+                                        result = KpiCalculationResult.Success(score = 65),
+                                        strategy = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
                                         children =
                                             listOf(randomKpiResultEdge(), randomKpiResultEdge()),
+                                        id = "",
+                                        originId = null,
                                     ),
                                 plannedWeight = 0.4,
                                 actualWeight = 0.4,
@@ -62,9 +64,9 @@ class ReporterTest {
                             KpiResultEdge(
                                 target =
                                     KpiResultNode(
-                                        kpiId = KpiId.EXTERNAL_QUALITY.name,
-                                        kpiResult = KpiCalculationResult.Success(score = 85),
-                                        strategyType = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
+                                        typeId = KpiType.EXTERNAL_QUALITY.name,
+                                        result = KpiCalculationResult.Success(score = 85),
+                                        strategy = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
                                         children =
                                             listOf(randomKpiResultEdge(), randomKpiResultEdge()),
                                     ),
@@ -72,6 +74,8 @@ class ReporterTest {
                                 actualWeight = 0.4,
                             ),
                         ),
+                    id = "",
+                    originId = null,
                 )
             )
 
