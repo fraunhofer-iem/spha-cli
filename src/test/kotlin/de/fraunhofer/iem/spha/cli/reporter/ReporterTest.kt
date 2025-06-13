@@ -22,7 +22,7 @@ import kotlin.test.assertNotNull
 class ReporterTest {
     private fun randomKpiResultNode(): KpiResultNode {
         return KpiResultNode(
-            kpiId = KpiId.SECURITY,
+            kpiId = KpiId.SECURITY.name,
             kpiResult = KpiCalculationResult.Success(score = 65),
             strategyType = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
             children = listOf(),
@@ -42,7 +42,7 @@ class ReporterTest {
         val kpiResultHierarchy =
             KpiResultHierarchy.create(
                 KpiResultNode(
-                    kpiId = KpiId.ROOT,
+                    kpiId = KpiId.ROOT.name,
                     kpiResult = KpiCalculationResult.Success(score = 75),
                     strategyType = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
                     children =
@@ -50,7 +50,7 @@ class ReporterTest {
                             KpiResultEdge(
                                 target =
                                     KpiResultNode(
-                                        kpiId = KpiId.SECURITY,
+                                        kpiId = KpiId.SECURITY.name,
                                         kpiResult = KpiCalculationResult.Success(score = 65),
                                         strategyType = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
                                         children =
@@ -62,7 +62,7 @@ class ReporterTest {
                             KpiResultEdge(
                                 target =
                                     KpiResultNode(
-                                        kpiId = KpiId.EXTERNAL_QUALITY,
+                                        kpiId = KpiId.EXTERNAL_QUALITY.name,
                                         kpiResult = KpiCalculationResult.Success(score = 85),
                                         strategyType = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
                                         children =

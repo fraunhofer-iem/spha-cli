@@ -69,7 +69,7 @@ class CalculateKpiCommandTest : KoinTest {
         val expectedResult =
             KpiResultHierarchy.create(
                 KpiResultNode(
-                    KpiId.ROOT,
+                    KpiId.ROOT.name,
                     KpiCalculationResult.Success(100),
                     KpiStrategyId.RAW_VALUE_STRATEGY,
                     listOf(),
@@ -97,15 +97,15 @@ class CalculateKpiCommandTest : KoinTest {
         fileSystem.provider().createDirectory(fileSystem.getPath("tools"))
         fileSystem
             .getPath("./tools/1.json")
-            .writeText("[{ \"kind\" : \"CHECKED_IN_BINARIES\", \"score\" : 100 }]")
+            .writeText("[{ \"kpiId\" : \"CHECKED_IN_BINARIES\", \"score\" : 100 }]")
         fileSystem
             .getPath("./tools/2.json")
-            .writeText("[{ \"kind\" : \"SECRETS\", \"score\" : 50 }]")
+            .writeText("[{ \"kpiId\" : \"SECRETS\", \"score\" : 50 }]")
 
         val expectedResult =
             KpiResultHierarchy.create(
                 KpiResultNode(
-                    KpiId.ROOT,
+                    KpiId.ROOT.name,
                     KpiCalculationResult.Success(100),
                     KpiStrategyId.RAW_VALUE_STRATEGY,
                     listOf(),
@@ -116,7 +116,10 @@ class CalculateKpiCommandTest : KoinTest {
         every {
             KpiCalculator.calculateKpis(
                 DefaultHierarchy.get(),
-                listOf(RawValueKpi(KpiId.CHECKED_IN_BINARIES, 100), RawValueKpi(KpiId.SECRETS, 50)),
+                listOf(
+                    RawValueKpi(KpiId.CHECKED_IN_BINARIES.name, 100),
+                    RawValueKpi(KpiId.SECRETS.name, 50),
+                ),
             )
         } returns expectedResult
 
@@ -133,7 +136,7 @@ class CalculateKpiCommandTest : KoinTest {
     fun testCalculate_CustomHierarchy() {
 
         val customHierarchy =
-            KpiHierarchy.create(KpiNode(KpiId.ROOT, KpiStrategyId.MAXIMUM_STRATEGY, listOf()))
+            KpiHierarchy.create(KpiNode(KpiId.ROOT.name, KpiStrategyId.MAXIMUM_STRATEGY, listOf()))
 
         val fileSystem =
             declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
@@ -145,7 +148,7 @@ class CalculateKpiCommandTest : KoinTest {
         val expectedResult =
             KpiResultHierarchy.create(
                 KpiResultNode(
-                    KpiId.ROOT,
+                    KpiId.ROOT.name,
                     KpiCalculationResult.Empty(),
                     KpiStrategyId.RAW_VALUE_STRATEGY,
                     listOf(),
@@ -172,10 +175,10 @@ class CalculateKpiCommandTest : KoinTest {
         fileSystem.provider().createDirectory(fileSystem.getPath("tools"))
         fileSystem
             .getPath("./tools/1.json")
-            .writeText("[{ \"kind\" : \"CHECKED_IN_BINARIES\", \"score\" : 100 }]")
+            .writeText("[{ \"kpiId\" : \"CHECKED_IN_BINARIES\", \"score\" : 100 }]")
         fileSystem
             .getPath("./tools/2.json")
-            .writeText("[{ \"kind\" : \"SECRETS\", \"score\" : 50 }]")
+            .writeText("[{ \"kpiId\" : \"SECRETS\", \"score\" : 50 }]")
 
         val command = CalculateKpiCommand()
         command.test("-o result.json -s tools")
@@ -185,8 +188,8 @@ class CalculateKpiCommandTest : KoinTest {
                 KpiCalculator.calculateKpis(
                     DefaultHierarchy.get(),
                     listOf(
-                        RawValueKpi(KpiId.CHECKED_IN_BINARIES, 100),
-                        RawValueKpi(KpiId.SECRETS, 50),
+                        RawValueKpi(KpiId.CHECKED_IN_BINARIES.name, 100),
+                        RawValueKpi(KpiId.SECRETS.name, 50),
                     ),
                 ),
                 Json.decodeFromStream<KpiResultHierarchy>(it),
