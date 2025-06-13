@@ -1,4 +1,16 @@
 /*
+ * Copyright (c) 2025 Fraunhofer IEM. All rights reserved.
+ *
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ *
+ * SPDX-License-Identifier: MIT
+ * License-Filename: LICENSE
+ */
+
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+import org.gradle.kotlin.dsl.withType
+
+/*
  * Copyright (c) 2024 Fraunhofer IEM. All rights reserved.
  *
  * Licensed under the MIT license. See LICENSE file in the project root for details.
@@ -90,6 +102,20 @@ if (version == Project.DEFAULT_VERSION) {
             ?.replace("${semver.defaultPreRelease}+", "")
             // Fall back to a plain version without pre-release or build parts.
             ?: semver.version
+}
+
+fun isNonStable(version: String): Boolean {
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
+    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
+    val isStable = stableKeyword || regex.matches(version)
+    return isStable.not()
+}
+
+// https://github.com/ben-manes/gradle-versions-plugin
+tasks.withType<DependencyUpdatesTask> {
+    rejectVersionIf {
+        isNonStable(candidate.version)
+    }
 }
 
 logger.lifecycle("Building SPHA-CLI version $version.")
