@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Fraunhofer IEM. All rights reserved.
+ * Copyright (c) 2024-2025 Fraunhofer IEM. All rights reserved.
  *
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  *
@@ -9,15 +9,6 @@
 
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import org.gradle.kotlin.dsl.withType
-
-/*
- * Copyright (c) 2024 Fraunhofer IEM. All rights reserved.
- *
- * Licensed under the MIT license. See LICENSE file in the project root for details.
- *
- * SPDX-License-Identifier: MIT
- * License-Filename: LICENSE
- */
 
 plugins {
     jacoco
