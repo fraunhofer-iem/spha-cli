@@ -56,10 +56,10 @@ fun KpiResultNode.getScoreVisualization(): String? {
 
 fun KpiResultHierarchy.getMarkdown(): String? {
 
-    val topLevelScore = this.rootNode.getScoreVisualization()
+    val topLevelScore = this.root.getScoreVisualization()
 
     val firstLevelScores =
-        this.rootNode.children
+        this.root.edges
             .map { edge -> edge.target.getScoreVisualization() }
             .reduce { a, b ->
                 """$a   

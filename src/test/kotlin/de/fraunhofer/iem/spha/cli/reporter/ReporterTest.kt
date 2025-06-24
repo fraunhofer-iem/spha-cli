@@ -25,7 +25,7 @@ class ReporterTest {
             typeId = KpiType.SECURITY.name,
             result = KpiCalculationResult.Success(score = 65),
             strategy = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
-            children = listOf(),
+            edges = listOf(),
         )
     }
 
@@ -45,7 +45,7 @@ class ReporterTest {
                     typeId = KpiType.ROOT.name,
                     result = KpiCalculationResult.Success(score = 75),
                     strategy = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
-                    children =
+                    edges =
                         listOf(
                             KpiResultEdge(
                                 target =
@@ -53,7 +53,7 @@ class ReporterTest {
                                         typeId = KpiType.SECURITY.name,
                                         result = KpiCalculationResult.Success(score = 65),
                                         strategy = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
-                                        children =
+                                        edges =
                                             listOf(randomKpiResultEdge(), randomKpiResultEdge()),
                                         id = "",
                                         originId = null,
@@ -67,8 +67,7 @@ class ReporterTest {
                                         typeId = KpiType.EXTERNAL_QUALITY.name,
                                         result = KpiCalculationResult.Success(score = 85),
                                         strategy = KpiStrategyId.WEIGHTED_AVERAGE_STRATEGY,
-                                        children =
-                                            listOf(randomKpiResultEdge(), randomKpiResultEdge()),
+                                        edges = listOf(randomKpiResultEdge(), randomKpiResultEdge()),
                                     ),
                                 plannedWeight = 0.4,
                                 actualWeight = 0.4,

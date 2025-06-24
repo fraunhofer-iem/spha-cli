@@ -232,7 +232,7 @@ class CalculateKpiCommandTest : KoinTest {
         if (h1.schemaVersion != h2.schemaVersion) return false
 
         // Start the recursive comparison from the root nodes.
-        return compareNodes(h1.rootNode, h2.rootNode)
+        return compareNodes(h1.root, h2.root)
     }
 
     /** Recursively compares two [KpiResultNode] objects, ignoring their `id` fields. */
@@ -251,12 +251,12 @@ class CalculateKpiCommandTest : KoinTest {
         }
 
         // Compare the children lists.
-        if (n1.children.size != n2.children.size) return false
+        if (n1.edges.size != n2.edges.size) return false
 
         // Compare each edge in the children list.
         // Using a zip ensures we compare pairs of edges. Since we already checked sizes, this is
         // safe.
-        return n1.children.zip(n2.children).all { (edge1, edge2) -> compareEdges(edge1, edge2) }
+        return n1.edges.zip(n2.edges).all { (edge1, edge2) -> compareEdges(edge1, edge2) }
     }
 
     /** Compares two [KpiResultEdge] objects. */
