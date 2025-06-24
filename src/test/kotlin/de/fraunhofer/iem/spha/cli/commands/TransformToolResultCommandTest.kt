@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Fraunhofer IEM. All rights reserved.
+ * Copyright (c) 2024-2025 Fraunhofer IEM. All rights reserved.
  *
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  *
@@ -16,7 +16,7 @@ import de.fraunhofer.iem.spha.cli.appModules
 import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
 import de.fraunhofer.iem.spha.cli.transformer.ToolNotFoundException
 import de.fraunhofer.iem.spha.cli.transformer.TransformerOptions
-import de.fraunhofer.iem.spha.model.kpi.KpiId
+import de.fraunhofer.iem.spha.model.kpi.KpiType
 import de.fraunhofer.iem.spha.model.kpi.RawValueKpi
 import io.mockk.every
 import io.mockk.mockkClass
@@ -123,7 +123,8 @@ class TransformToolResultCommandTest : KoinTest {
 
         val toolName = "occmd"
 
-        val resultList = listOf(RawValueKpi(KpiId.SECRETS.name, 100), RawValueKpi(KpiId.SECURITY.name, 1))
+        val resultList =
+            listOf(RawValueKpi(KpiType.SECRETS.name, 100), RawValueKpi(KpiType.SECURITY.name, 1))
 
         val fileSystem =
             declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
