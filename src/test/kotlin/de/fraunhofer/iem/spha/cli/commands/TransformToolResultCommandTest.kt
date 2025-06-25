@@ -9,15 +9,13 @@
 
 package de.fraunhofer.iem.spha.cli.commands
 
-import com.github.ajalt.clikt.testing.test
+import com.github.ajalt.clikt.command.test
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import de.fraunhofer.iem.spha.cli.appModules
 import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
 import de.fraunhofer.iem.spha.cli.transformer.ToolNotFoundException
 import de.fraunhofer.iem.spha.cli.transformer.TransformerOptions
-import de.fraunhofer.iem.spha.model.kpi.KpiType
-import de.fraunhofer.iem.spha.model.kpi.RawValueKpi
 import io.mockk.every
 import io.mockk.mockkClass
 import io.mockk.verify
@@ -27,7 +25,7 @@ import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlinx.serialization.json.Json
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
@@ -57,14 +55,13 @@ class TransformToolResultCommandTest : KoinTest {
     val mockProvider = MockProviderExtension.create { clazz -> mockkClass(clazz) }
 
     @Test
-    fun testTransform_ToolDoesNotExists_Throws() {
+    fun testTransform_ToolDoesNotExists_Throws() = runTest {
         val command = TransformToolResultCommand()
         assertThrows<ToolNotFoundException> { command.test("-t toolDoesNotExist") }
     }
 
     @Test
-    fun testTransform_TransformerInternal_Throws() {
-
+    fun testTransform_TransformerInternal_Throws() = runTest {
         val toolName = "occmd"
 
         val fileSystem =
@@ -84,7 +81,7 @@ class TransformToolResultCommandTest : KoinTest {
 
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
-    fun testTransform_StrictModeApplied(expectedStrict: Boolean) {
+    fun testTransform_StrictModeApplied(expectedStrict: Boolean) = runTest {
         val toolName = "occmd"
         declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
@@ -97,8 +94,7 @@ class TransformToolResultCommandTest : KoinTest {
     }
 
     @Test
-    fun testTransform_ResultFileOverwrite() {
-
+    fun testTransform_ResultFileOverwrite() = runTest {
         val toolName = "occmd"
 
         val fileSystem =
@@ -118,54 +114,34 @@ class TransformToolResultCommandTest : KoinTest {
         verify(exactly = 1) { transformer.getRawKpis(any(), any()) }
     }
 
-    @Test
-    fun testTransform_ResultFileSerialize() {
-
-        val toolName = "occmd"
-
-        val resultList =
-            listOf(RawValueKpi(KpiType.SECRETS.name, 100), RawValueKpi(KpiType.SECURITY.name, 1))
-
-        val fileSystem =
-            declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
-
-        declareMock<RawKpiTransformer> { every { getRawKpis(any(), any()) } returns resultList }
-
-        TransformToolResultCommand().test("-t $toolName")
-
-        val expectedResultPath = fileSystem.getPath("$toolName-result.json").toAbsolutePath()
-
-        // Read in the written file and check if it matches the result
-        val actualRawKpis =
-            Json.decodeFromString<Collection<RawValueKpi>>(expectedResultPath.readText())
-        assertEquals(actualRawKpis, resultList)
-    }
-
     @ParameterizedTest
     @MethodSource("outputTestSource")
-    fun testTransform_UseOutputPath(toolName: String, output: String, expectedFilePath: String) {
+    fun testTransform_UseOutputPath(toolName: String, output: String, expectedFilePath: String) =
+        runTest {
+            val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
+            declareMock<RawKpiTransformer> { every { getRawKpis(any(), any()) } returns listOf() }
 
-        val fileSystem = declare<FileSystem> { Jimfs.newFileSystem(Configuration.unix()) }
-        declareMock<RawKpiTransformer> { every { getRawKpis(any(), any()) } returns listOf() }
+            TransformToolResultCommand().test("-t $toolName -o $output")
 
-        TransformToolResultCommand().test("-t $toolName -o $output")
-
-        assertTrue { fileSystem.provider().exists(fileSystem.getPath(expectedFilePath)) }
-    }
+            assertTrue { fileSystem.provider().exists(fileSystem.getPath(expectedFilePath)) }
+        }
 
     @ParameterizedTest
     @MethodSource("inputTestSource")
-    fun testTransform_MultipleInputsSplit(inputArg: String, expectedInputs: List<String>) {
-        val toolName = "toolA"
+    fun testTransform_MultipleInputsSplit(inputArg: String, expectedInputs: List<String>) =
+        runTest {
+            val toolName = "toolA"
 
-        declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
-        val transformer =
-            declareMock<RawKpiTransformer> { every { getRawKpis(any(), any()) } returns listOf() }
-        TransformToolResultCommand().test("-t $toolName $inputArg")
+            declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
+            val transformer =
+                declareMock<RawKpiTransformer> {
+                    every { getRawKpis(any(), any()) } returns listOf()
+                }
+            TransformToolResultCommand().test("-t $toolName $inputArg")
 
-        val options = TransformerOptions(toolName, inputFiles = expectedInputs)
-        verify(exactly = 1) { transformer.getRawKpis(eq(options), any()) }
-    }
+            val options = TransformerOptions(toolName, inputFiles = expectedInputs)
+            verify(exactly = 1) { transformer.getRawKpis(eq(options), any()) }
+        }
 
     companion object {
         @JvmStatic

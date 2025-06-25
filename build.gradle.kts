@@ -21,7 +21,10 @@ plugins {
 
 group = "de.fraunhofer.iem"
 
-repositories { mavenCentral() }
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
 
 dependencies {
     implementation(libs.bundles.kpiCalculator)
@@ -34,6 +37,7 @@ dependencies {
     implementation(libs.kotlin.serialization.json)
     implementation(libs.kotlin.di)
 
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlin.di.test)
     testImplementation(libs.kotlin.di.junit5)

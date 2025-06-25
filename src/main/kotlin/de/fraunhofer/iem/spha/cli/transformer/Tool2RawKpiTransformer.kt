@@ -14,9 +14,9 @@ import de.fraunhofer.iem.spha.adapter.tools.osv.OsvAdapter
 import de.fraunhofer.iem.spha.adapter.tools.trivy.TrivyAdapter
 import de.fraunhofer.iem.spha.adapter.tools.trufflehog.TrufflehogAdapter
 import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
-import de.fraunhofer.iem.spha.model.adapter.osv.OsvScannerDto
-import de.fraunhofer.iem.spha.model.adapter.trivy.TrivyDto
-import de.fraunhofer.iem.spha.model.adapter.trufflehog.TrufflehogReportDto
+import de.fraunhofer.iem.spha.model.adapter.OsvScannerDto
+import de.fraunhofer.iem.spha.model.adapter.TrivyDto
+import de.fraunhofer.iem.spha.model.adapter.TrufflehogReportDto
 import de.fraunhofer.iem.spha.model.kpi.RawValueKpi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream

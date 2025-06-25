@@ -11,9 +11,10 @@ apache-commoms = "3.17.0"
 junit = "5.13.1"
 ktfmt = "0.22.0"
 versions = "0.52.0"
-sphaVersion = "0.3.0"
+sphaVersion = "0.4.0-004.sha.91b6165"
 semver = "0.16.0"
 ktor = "3.2.0"
+kotlinxCoroutines = "1.10.2"
 
 [libraries]
 # KPI calculator
@@ -24,6 +25,9 @@ kpi-calculator-adapter = { module = "de.fraunhofer.iem:spha-adapter", version.re
 kotlin-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlin-cli = { module = "com.github.ajalt.clikt:clikt", version.ref = "kotlinCli" }
 kotlin-di = { module = "io.insert-koin:koin-core", version.ref = "koinDI" }
+
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+
 # Logging
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlinLogging" }
 simpleLogger = { module = "org.slf4j:slf4j-simple", version.ref = "simpleLogger" }

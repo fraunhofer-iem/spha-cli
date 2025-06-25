@@ -9,7 +9,7 @@
 
 package de.fraunhofer.iem.spha.cli.commands
 
-import com.github.ajalt.clikt.testing.test
+import com.github.ajalt.clikt.command.test
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import de.fraunhofer.iem.spha.cli.appModules
@@ -33,6 +33,7 @@ import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -59,7 +60,7 @@ class CalculateKpiCommandTest : KoinTest {
 
     @OptIn(ExperimentalSerializationApi::class)
     @Test
-    fun testCalculate_IgnoreIncompatibleFiles() {
+    fun testCalculate_IgnoreIncompatibleFiles() = runTest {
         val fileSystem =
             declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
@@ -92,7 +93,7 @@ class CalculateKpiCommandTest : KoinTest {
 
     @OptIn(ExperimentalSerializationApi::class)
     @Test
-    fun testCalculate_ReadRawValuesFromFiles() {
+    fun testCalculate_ReadRawValuesFromFiles() = runTest {
         val fileSystem =
             declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
@@ -140,8 +141,7 @@ class CalculateKpiCommandTest : KoinTest {
 
     @OptIn(ExperimentalSerializationApi::class)
     @Test
-    fun testCalculate_CustomHierarchy() {
-
+    fun testCalculate_CustomHierarchy() = runTest {
         val customHierarchy =
             KpiHierarchy.create(
                 KpiNode(KpiType.ROOT.name, KpiStrategyId.MAXIMUM_STRATEGY, listOf())
@@ -178,7 +178,7 @@ class CalculateKpiCommandTest : KoinTest {
 
     @OptIn(ExperimentalSerializationApi::class)
     @Test
-    fun testCalculate_Integration() {
+    fun testCalculate_Integration() = runTest {
         val fileSystem =
             declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 
