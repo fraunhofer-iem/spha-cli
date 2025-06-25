@@ -42,10 +42,6 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
 
         val result: Collection<AdapterResult<*>> =
             when (options.tool) {
-                //            "occmd" -> {
-                //                val adapterInput: OccmdDto = OccmdAdapter.createInputFrom(input)
-                //                OccmdAdapter.transformDataToKpi(adapterInput)
-                //            }
                 "trivy" -> {
                     getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
                         _logger.info { "Selected supported tool: Trivy" }
@@ -78,7 +74,8 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
                 return@mapNotNull it.rawValueKpi
             }
 
-        // If we have unequal counts, we know that adapter returned faulted elements. Thus, we throw
+        // If we have unequal counts, we know that the adapter returned faulted elements. Thus, we
+        // throw
         // in strict mode.
         if (strictMode && rawKpis.count() != result.count()) {
             throw StrictModeConstraintFailed("The adapter produced faulted results.")
