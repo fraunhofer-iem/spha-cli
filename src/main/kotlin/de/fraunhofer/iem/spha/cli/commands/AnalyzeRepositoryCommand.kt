@@ -11,10 +11,15 @@ package de.fraunhofer.iem.spha.cli.commands
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import de.fraunhofer.iem.spha.adapter.AdapterResult
 import de.fraunhofer.iem.spha.cli.SphaToolCommandBase
 import de.fraunhofer.iem.spha.cli.network.GitHubProjectFetcher
+import de.fraunhofer.iem.spha.cli.network.NetworkResponse
+import de.fraunhofer.iem.spha.cli.network.ProjectInfo
+import de.fraunhofer.iem.spha.cli.tools.ToolResultParser
 import de.fraunhofer.iem.spha.core.KpiCalculator
-import de.fraunhofer.iem.spha.model.kpi.RawValueKpi
+import de.fraunhofer.iem.spha.model.adapter.OsvScannerDto
+import de.fraunhofer.iem.spha.model.adapter.TlcDto
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.DefaultHierarchy
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiHierarchy
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiResultHierarchy
@@ -23,11 +28,19 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+
+@Serializable
+data class SphaToolResult(
+    val resultHierarchy: KpiResultHierarchy,
+    val origins: List<String>,
+    val projectInfo: ProjectInfo? = null,
+)
 
 internal class AnalyzeRepositoryCommand :
     SphaToolCommandBase(
@@ -70,6 +83,7 @@ internal class AnalyzeRepositoryCommand :
     override suspend fun run() {
         super.run()
 
+        // TODO: do we want to make this somehow more transparent to CLI users?
         val githubToken = System.getenv("GITHUB_TOKEN")
         if (githubToken == null) {
             Logger.error { "GITHUB_TOKEN environment variable not set." }
@@ -77,27 +91,59 @@ internal class AnalyzeRepositoryCommand :
         }
 
         // Use runBlocking to call the suspend function from a non-suspend context
-        val projectInfo = githubProjectFetcher.use { it.getProjectInfo(repoUrl, githubToken) }
+        val projectInfoRes = githubProjectFetcher.use { it.getProjectInfo(repoUrl, githubToken) }
+        val projectInfo =
+            when (projectInfoRes) {
+                is NetworkResponse.Success<ProjectInfo> -> {
+                    projectInfoRes.data
+                }
+                else -> null
+            }
         Logger.info { "Fetched project info: $projectInfo" }
 
-        val rawValueKpis = emptyList<RawValueKpi>() // TODO
-        if (rawValueKpis.isEmpty()) {
-            Logger.warn { "No kpi values to calculate." }
+        val toolPath = fileSystem.getPath(this.toolResultDir ?: "").toAbsolutePath().toString()
+
+        val adapterResults =
+            ToolResultParser.parseJsonFilesFromDirectory(
+                directoryPath = toolPath,
+                serializers = listOf(OsvScannerDto.serializer(), TlcDto.serializer()),
+            )
+
+        if (adapterResults.isEmpty()) {
+            Logger.warn { "No kpi values to calculate. Adapter results are empty." }
         }
 
+        val rawValueKpisAndOrigin =
+            adapterResults.mapNotNull {
+                when (it) {
+                    is AdapterResult.Success<*> -> {
+                        Pair(it.rawValueKpi, it.origin)
+                    }
+                    else -> null
+                }
+            }
+
         val hierarchyModel = getHierarchy()
-        val kpiResult = KpiCalculator.calculateKpis(hierarchyModel, rawValueKpis)
-        writeHierarchy(kpiResult)
+        val kpiResult =
+            KpiCalculator.calculateKpis(hierarchyModel, rawValueKpisAndOrigin.map { it.first })
+
+        val result =
+            SphaToolResult(
+                kpiResult,
+                rawValueKpisAndOrigin.map { it.second.toString() },
+                projectInfo,
+            )
+        writeResult(result)
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    private fun writeHierarchy(kpiResult: KpiResultHierarchy) {
+    private fun writeResult(result: SphaToolResult) {
         val outputFilePath = fileSystem.getPath(output)
 
         val directory = outputFilePath.toAbsolutePath().parent
         directory.createDirectories()
 
-        outputFilePath.outputStream().use { Json.encodeToStream(kpiResult, it) }
+        outputFilePath.outputStream().use { Json.encodeToStream(result, it) }
     }
 
     @OptIn(ExperimentalSerializationApi::class)
