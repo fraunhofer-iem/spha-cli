@@ -13,6 +13,7 @@ ktfmt = "0.22.0"
 versions = "0.52.0"
 sphaVersion = "0.3.0"
 semver = "0.16.0"
+ktor = "3.2.0"
 
 [libraries]
 # KPI calculator
@@ -26,6 +27,12 @@ kotlin-di = { module = "io.insert-koin:koin-core", version.ref = "koinDI" }
 # Logging
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlinLogging" }
 simpleLogger = { module = "org.slf4j:slf4j-simple", version.ref = "simpleLogger" }
+
+# HTTP
+http-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+http-ktor-client-engine-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+http-ktor-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+http-ktor-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 # Testing Libs
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -46,4 +53,5 @@ semver = { id = "com.github.jmongard.git-semver-plugin", version.ref = "semver" 
 
 [bundles]
 kpiCalculator = ["kpi-calculator-adapter", "kpi-calculator-core", "kpi-calculator-model"]
+ktor = ["http-ktor-client-core", "http-ktor-client-engine-cio", "http-ktor-content-negotiation", "http-ktor-serialization"]
 
