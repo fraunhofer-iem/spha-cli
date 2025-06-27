@@ -14,9 +14,9 @@ import de.fraunhofer.iem.spha.adapter.tools.osv.OsvAdapter
 import de.fraunhofer.iem.spha.adapter.tools.trivy.TrivyAdapter
 import de.fraunhofer.iem.spha.adapter.tools.trufflehog.TrufflehogAdapter
 import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
-import de.fraunhofer.iem.spha.model.adapter.osv.OsvScannerDto
-import de.fraunhofer.iem.spha.model.adapter.trivy.TrivyDto
-import de.fraunhofer.iem.spha.model.adapter.trufflehog.TrufflehogReportDto
+import de.fraunhofer.iem.spha.model.adapter.OsvScannerDto
+import de.fraunhofer.iem.spha.model.adapter.TrivyDtoV2
+import de.fraunhofer.iem.spha.model.adapter.TrufflehogDto
 import de.fraunhofer.iem.spha.model.kpi.RawValueKpi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
@@ -42,29 +42,26 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
 
         val result: Collection<AdapterResult<*>> =
             when (options.tool) {
-                //            "occmd" -> {
-                //                val adapterInput: OccmdDto = OccmdAdapter.createInputFrom(input)
-                //                OccmdAdapter.transformDataToKpi(adapterInput)
-                //            }
                 "trivy" -> {
                     getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
                         _logger.info { "Selected supported tool: Trivy" }
-                        val adapterInput: TrivyDto = TrivyAdapter.dtoFromJson(it)
+                        val adapterInput = TrivyAdapter.dtoFromJson(it, TrivyDtoV2.serializer())
                         return@use TrivyAdapter.transformDataToKpi(adapterInput)
                     }
                 }
                 "osv" -> {
                     getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
                         _logger.info { "Selected supported tool: OSV" }
-                        val adapterInput: OsvScannerDto = OsvAdapter.dtoFromJson(it)
+                        val adapterInput: OsvScannerDto =
+                            OsvAdapter.dtoFromJson(it, OsvScannerDto.serializer())
                         return@use OsvAdapter.transformDataToKpi(adapterInput)
                     }
                 }
                 "trufflehog" -> {
                     getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
                         _logger.info { "Selected supported tool: Trufflehog" }
-                        val adapterInput: List<TrufflehogReportDto> =
-                            TrufflehogAdapter.dtoFromJson(it)
+                        val adapterInput =
+                            TrufflehogAdapter.dtoFromJson(it, TrufflehogDto.serializer())
                         return@use TrufflehogAdapter.transformDataToKpi(adapterInput)
                     }
                 }
@@ -78,7 +75,8 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
                 return@mapNotNull it.rawValueKpi
             }
 
-        // If we have unequal counts, we know that adapter returned faulted elements. Thus, we throw
+        // If we have unequal counts, we know that the adapter returned faulted elements. Thus, we
+        // throw
         // in strict mode.
         if (strictMode && rawKpis.count() != result.count()) {
             throw StrictModeConstraintFailed("The adapter produced faulted results.")

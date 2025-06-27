@@ -8,7 +8,6 @@
  */
 
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import org.gradle.kotlin.dsl.withType
 
 plugins {
     jacoco
@@ -22,10 +21,14 @@ plugins {
 
 group = "de.fraunhofer.iem"
 
-repositories { mavenCentral() }
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
 
 dependencies {
     implementation(libs.bundles.kpiCalculator)
+    implementation(libs.bundles.ktor)
 
     implementation(libs.kotlin.cli)
     implementation(libs.kotlin.logging)
@@ -34,6 +37,7 @@ dependencies {
     implementation(libs.kotlin.serialization.json)
     implementation(libs.kotlin.di)
 
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlin.di.test)
     testImplementation(libs.kotlin.di.junit5)
@@ -67,7 +71,7 @@ application { mainClass = "de.fraunhofer.iem.spha.cli.MainKt" }
 kotlin {
     compilerOptions {
         jvmToolchain(22)
-        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
     }
 }
 

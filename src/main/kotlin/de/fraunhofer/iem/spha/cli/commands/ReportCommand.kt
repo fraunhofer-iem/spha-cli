@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Fraunhofer IEM. All rights reserved.
+ * Copyright (c) 2024-2025 Fraunhofer IEM. All rights reserved.
  *
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  *
@@ -52,7 +52,7 @@ internal class ReportCommand :
             )
             .required()
 
-    override fun run() {
+    override suspend fun run() {
         super.run()
 
         val resultHierarchy = readResultHierarchy()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Fraunhofer IEM. All rights reserved.
+ * Copyright (c) 2024-2025 Fraunhofer IEM. All rights reserved.
  *
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  *
@@ -65,7 +65,7 @@ internal class TransformToolResultCommand :
         )
 
     @OptIn(ExperimentalSerializationApi::class)
-    override fun run() {
+    override suspend fun run() {
         super.run()
         val result = transformer.getRawKpis(TransformerOptions(toolName, inputFiles), strict)
         val resultPath = getResultFilePath()
