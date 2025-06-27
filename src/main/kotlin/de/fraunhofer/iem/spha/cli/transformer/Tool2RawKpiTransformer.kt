@@ -15,8 +15,8 @@ import de.fraunhofer.iem.spha.adapter.tools.trivy.TrivyAdapter
 import de.fraunhofer.iem.spha.adapter.tools.trufflehog.TrufflehogAdapter
 import de.fraunhofer.iem.spha.cli.StrictModeConstraintFailed
 import de.fraunhofer.iem.spha.model.adapter.OsvScannerDto
-import de.fraunhofer.iem.spha.model.adapter.TrivyDto
-import de.fraunhofer.iem.spha.model.adapter.TrufflehogReportDto
+import de.fraunhofer.iem.spha.model.adapter.TrivyDtoV2
+import de.fraunhofer.iem.spha.model.adapter.TrufflehogDto
 import de.fraunhofer.iem.spha.model.kpi.RawValueKpi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
@@ -45,22 +45,23 @@ internal class Tool2RawKpiTransformer : RawKpiTransformer, KoinComponent {
                 "trivy" -> {
                     getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
                         _logger.info { "Selected supported tool: Trivy" }
-                        val adapterInput: TrivyDto = TrivyAdapter.dtoFromJson(it)
+                        val adapterInput = TrivyAdapter.dtoFromJson(it, TrivyDtoV2.serializer())
                         return@use TrivyAdapter.transformDataToKpi(adapterInput)
                     }
                 }
                 "osv" -> {
                     getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
                         _logger.info { "Selected supported tool: OSV" }
-                        val adapterInput: OsvScannerDto = OsvAdapter.dtoFromJson(it)
+                        val adapterInput: OsvScannerDto =
+                            OsvAdapter.dtoFromJson(it, OsvScannerDto.serializer())
                         return@use OsvAdapter.transformDataToKpi(adapterInput)
                     }
                 }
                 "trufflehog" -> {
                     getSingleInputStreamFromInputFile(options.inputFiles, strictMode).use {
                         _logger.info { "Selected supported tool: Trufflehog" }
-                        val adapterInput: List<TrufflehogReportDto> =
-                            TrufflehogAdapter.dtoFromJson(it)
+                        val adapterInput =
+                            TrufflehogAdapter.dtoFromJson(it, TrufflehogDto.serializer())
                         return@use TrufflehogAdapter.transformDataToKpi(adapterInput)
                     }
                 }

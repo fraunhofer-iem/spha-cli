@@ -18,6 +18,7 @@ import de.fraunhofer.iem.spha.cli.network.NetworkResponse
 import de.fraunhofer.iem.spha.cli.network.ProjectInfo
 import de.fraunhofer.iem.spha.cli.tools.ToolResultParser
 import de.fraunhofer.iem.spha.core.KpiCalculator
+import de.fraunhofer.iem.spha.model.adapter.Origin
 import de.fraunhofer.iem.spha.model.adapter.OsvScannerDto
 import de.fraunhofer.iem.spha.model.adapter.TlcDto
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.DefaultHierarchy
@@ -39,7 +40,7 @@ import org.koin.core.component.inject
 data class SphaToolResult(
     val resultHierarchy: KpiResultHierarchy,
     val origins: List<String>,
-    val projectInfo: ProjectInfo? = null,
+    val projectInfo: ProjectInfo,
 )
 
 internal class AnalyzeRepositoryCommand :
@@ -97,7 +98,16 @@ internal class AnalyzeRepositoryCommand :
                 is NetworkResponse.Success<ProjectInfo> -> {
                     projectInfoRes.data
                 }
-                else -> null
+
+                else ->
+                    ProjectInfo(
+                        name = "Currently no data available",
+                        usedLanguages = listOf("Currently no data available"),
+                        url = repoUrl,
+                        numberOfContributors = -1,
+                        numberOfCommits = -1,
+                        lastCommitDate = "Currently no data available",
+                    )
             }
         Logger.info { "Fetched project info: $projectInfo" }
 
@@ -116,7 +126,7 @@ internal class AnalyzeRepositoryCommand :
         val rawValueKpisAndOrigin =
             adapterResults.mapNotNull {
                 when (it) {
-                    is AdapterResult.Success<*> -> {
+                    is AdapterResult.Success<Origin> -> {
                         Pair(it.rawValueKpi, it.origin)
                     }
                     else -> null

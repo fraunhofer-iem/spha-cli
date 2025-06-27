@@ -14,7 +14,12 @@ import de.fraunhofer.iem.spha.adapter.tools.osv.OsvAdapter
 import de.fraunhofer.iem.spha.adapter.tools.tlc.TlcAdapter
 import de.fraunhofer.iem.spha.adapter.tools.trivy.TrivyAdapter
 import de.fraunhofer.iem.spha.adapter.tools.trufflehog.TrufflehogAdapter
-import de.fraunhofer.iem.spha.model.adapter.*
+import de.fraunhofer.iem.spha.model.adapter.Origin
+import de.fraunhofer.iem.spha.model.adapter.OsvScannerDto
+import de.fraunhofer.iem.spha.model.adapter.TlcDto
+import de.fraunhofer.iem.spha.model.adapter.ToolResult
+import de.fraunhofer.iem.spha.model.adapter.TrivyDtoV2
+import de.fraunhofer.iem.spha.model.adapter.TrufflehogDto
 import java.io.File
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
@@ -25,7 +30,7 @@ object ToolResultParser {
     fun parseJsonFilesFromDirectory(
         directoryPath: String,
         serializers: List<KSerializer<out ToolResult>>,
-    ): List<AdapterResult<*>> {
+    ): List<AdapterResult<Origin>> {
 
         val jsonParser = Json {
             isLenient = true
@@ -48,7 +53,7 @@ object ToolResultParser {
             return emptyList()
         }
 
-        val adapterResults = mutableListOf<AdapterResult<*>>()
+        val adapterResults = mutableListOf<AdapterResult<Origin>>()
 
         for (file in jsonFiles) {
             try {
@@ -68,13 +73,13 @@ object ToolResultParser {
                                     OsvAdapter.transformDataToKpi(resultObject)
                                 }
                                 is TrivyDtoV2 -> {
-                                    TrivyAdapter.transformTrivyV2ToKpi(listOf(resultObject))
+                                    TrivyAdapter.transformDataToKpi(resultObject)
                                 }
-                                is TrufflehogReportDto -> {
+                                is TrufflehogDto -> {
                                     TrufflehogAdapter.transformDataToKpi(resultObject)
                                 }
                                 is TlcDto -> {
-                                    TlcAdapter.transformDataToKpi(listOf(resultObject))
+                                    TlcAdapter.transformDataToKpi(resultObject)
                                 }
                                 else -> {
                                     println("Unknown result object")
