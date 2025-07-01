@@ -12,15 +12,13 @@ package de.fraunhofer.iem.spha.cli.commands
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.fraunhofer.iem.spha.adapter.AdapterResult
+import de.fraunhofer.iem.spha.adapter.ToolResultParser
 import de.fraunhofer.iem.spha.cli.SphaToolCommandBase
 import de.fraunhofer.iem.spha.cli.network.GitHubProjectFetcher
 import de.fraunhofer.iem.spha.cli.network.NetworkResponse
 import de.fraunhofer.iem.spha.cli.network.ProjectInfo
-import de.fraunhofer.iem.spha.cli.tools.ToolResultParser
 import de.fraunhofer.iem.spha.core.KpiCalculator
 import de.fraunhofer.iem.spha.model.adapter.Origin
-import de.fraunhofer.iem.spha.model.adapter.OsvScannerDto
-import de.fraunhofer.iem.spha.model.adapter.TlcDto
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.DefaultHierarchy
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiHierarchy
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiResultHierarchy
@@ -113,11 +111,7 @@ internal class AnalyzeRepositoryCommand :
 
         val toolPath = fileSystem.getPath(this.toolResultDir ?: "").toAbsolutePath().toString()
 
-        val adapterResults =
-            ToolResultParser.parseJsonFilesFromDirectory(
-                directoryPath = toolPath,
-                serializers = listOf(OsvScannerDto.serializer(), TlcDto.serializer()),
-            )
+        val adapterResults = ToolResultParser.parseJsonFilesFromDirectory(directoryPath = toolPath)
 
         if (adapterResults.isEmpty()) {
             Logger.warn { "No kpi values to calculate. Adapter results are empty." }
