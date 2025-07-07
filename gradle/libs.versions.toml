@@ -11,7 +11,7 @@ apache-commoms = "3.17.0"
 junit = "5.13.1"
 ktfmt = "0.22.0"
 versions = "0.52.0"
-sphaVersion = "0.3.0"
+sphaVersion = "0.4.0"
 semver = "0.16.0"
 
 [libraries]
