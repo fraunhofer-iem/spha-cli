@@ -38,9 +38,11 @@ import org.koin.core.component.inject
 @Serializable
 data class SphaToolResult(
     val resultHierarchy: KpiResultHierarchy,
-    val origins: Map<String, List<Origin>>,
+    val origins: List<OriginWrapper>,
     val projectInfo: ProjectInfo,
 )
+
+@Serializable data class OriginWrapper(val origin: List<Origin>, val name: String)
 
 internal class AnalyzeRepositoryCommand :
     SphaToolCommandBase(
@@ -101,11 +103,12 @@ internal class AnalyzeRepositoryCommand :
                 else ->
                     ProjectInfo(
                         name = "Currently no data available",
-                        usedLanguages = listOf("Currently no data available"),
+                        usedLanguages = mapOf(Pair("Currently no data available", 0)),
                         url = repoUrl,
                         numberOfContributors = -1,
                         numberOfCommits = -1,
                         lastCommitDate = "Currently no data available",
+                        stars = -1,
                     )
             }
         Logger.info { "Fetched project info: $projectInfo" }

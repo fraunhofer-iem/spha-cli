@@ -36,6 +36,7 @@ private data class GraphQLResponse<T>(val data: T?, val errors: List<GraphQLErro
 private data class Repository(
     val name: String,
     val url: String,
+    val stargazerCount: Int,
     val languages: LanguageConnection,
     val defaultBranchRef: BranchRef?,
     val collaborators: UserConnection,
@@ -58,31 +59,33 @@ private data class Repository(
 @Serializable
 data class ProjectInfo(
     val name: String,
-    val usedLanguages: List<String>,
+    val usedLanguages: Map<String, Int>,
     val url: String,
+    val stars: Int,
     val numberOfContributors: Int,
     val numberOfCommits: Int?,
     val lastCommitDate: String?,
 )
 
 /** A class responsible for fetching project information from GitHub repositories. */
-class GitHubProjectFetcher(val logger: KLogger = KotlinLogging.logger {}) : Closeable {
+class GitHubProjectFetcher(
+    val logger: KLogger = KotlinLogging.logger {},
+    private val githubApiClient: HttpClient = createDefaultHttpClient(),
+) : Closeable by githubApiClient {
 
-    override fun close() {
-        githubApiClient.close()
-    }
-
-    private val githubApiClient =
-        HttpClient(CIO) {
-            install(ContentNegotiation) {
-                json(
-                    Json {
-                        ignoreUnknownKeys = true
-                        prettyPrint = true
-                    }
-                )
+    companion object {
+        private fun createDefaultHttpClient() =
+            HttpClient(CIO) {
+                install(ContentNegotiation) {
+                    json(
+                        Json {
+                            ignoreUnknownKeys = true
+                            prettyPrint = true
+                        }
+                    )
+                }
             }
-        }
+    }
 
     /**
      * Fetches project information from a GitHub repository URL.
@@ -104,6 +107,7 @@ class GitHubProjectFetcher(val logger: KLogger = KotlinLogging.logger {}) : Clos
               repository(owner: "$owner", name: "$repo") {
                 name
                 url
+                stargazerCount
                 languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
                   edges {
                     size
@@ -209,11 +213,12 @@ class GitHubProjectFetcher(val logger: KLogger = KotlinLogging.logger {}) : Clos
         return NetworkResponse.Success(
             ProjectInfo(
                 name = repository.name,
-                usedLanguages = repository.languages.edges.map { it.node.name },
+                usedLanguages = repository.languages.edges.associate { it.node.name to it.size },
                 url = repository.url,
                 numberOfContributors = repository.collaborators.totalCount,
                 numberOfCommits = repository.defaultBranchRef?.target?.history?.totalCount,
                 lastCommitDate = repository.defaultBranchRef?.target?.committedDate,
+                stars = repository.stargazerCount,
             )
         )
     }

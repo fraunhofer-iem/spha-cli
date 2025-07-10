@@ -9,6 +9,7 @@
 
 package de.fraunhofer.iem.spha.cli.reporter
 
+import de.fraunhofer.iem.spha.cli.commands.OriginWrapper
 import de.fraunhofer.iem.spha.model.adapter.Origin
 import de.fraunhofer.iem.spha.model.adapter.OsvVulnerabilityDto
 import de.fraunhofer.iem.spha.model.adapter.RepositoryDetails
@@ -26,7 +27,7 @@ private const val GitHubRepositoryName = "GitHub"
 private const val TrivyVulnerabilityName = "Trivy Vulnerability Scanner"
 private const val TrufflehogSecretName = "Trufflehog Secret Scanner"
 
-fun originToToolResult(origins: List<Origin>): Map<String, List<Origin>> {
+fun originToToolResult(origins: List<Origin>): List<OriginWrapper> {
     val toolResult = mutableMapOf<String, MutableList<Origin>>()
     origins.forEach { it ->
         when (it) {
@@ -57,7 +58,8 @@ fun originToToolResult(origins: List<Origin>): Map<String, List<Origin>> {
             }
         }
     }
-    return toolResult
+
+    return toolResult.map { (key, value) -> OriginWrapper(name = key, origin = value) }
 }
 
 fun getName(kpiType: String): String {
