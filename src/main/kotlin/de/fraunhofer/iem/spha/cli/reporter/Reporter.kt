@@ -28,38 +28,16 @@ private const val TrivyVulnerabilityName = "Trivy Vulnerability Scanner"
 private const val TrufflehogSecretName = "Trufflehog Secret Scanner"
 
 fun originToToolResult(origins: List<Origin>): List<OriginWrapper> {
-    val toolResult = mutableMapOf<String, MutableList<Origin>>()
-    origins.forEach { it ->
-        when (it) {
-            is TlcOriginDto -> {
-                if (toolResult.contains(TechnicalLagCalculatorName))
-                    toolResult[TechnicalLagCalculatorName]?.add(it)
-                else toolResult[TechnicalLagCalculatorName] = mutableListOf(it)
-            }
-            is OsvVulnerabilityDto -> {
-                if (toolResult.contains(OsvVulnerabilityCalculatorName))
-                    toolResult[OsvVulnerabilityCalculatorName]?.add(it)
-                else toolResult[OsvVulnerabilityCalculatorName] = mutableListOf(it)
-            }
-            is RepositoryDetails -> {
-                if (toolResult.contains(GitHubRepositoryName))
-                    toolResult[GitHubRepositoryName]?.add(it)
-                else toolResult[GitHubRepositoryName] = mutableListOf(it)
-            }
-            is TrivyVulnerabilityDto -> {
-                if (toolResult.contains(TrivyVulnerabilityName))
-                    toolResult[TrivyVulnerabilityName]?.add(it)
-                else toolResult[TrivyVulnerabilityName] = mutableListOf(it)
-            }
-            is TrufflehogReportDto -> {
-                if (toolResult.contains(TrufflehogSecretName))
-                    toolResult[TrufflehogSecretName]?.add(it)
-                else toolResult[TrufflehogSecretName] = mutableListOf(it)
-            }
+    return origins.groupBy { origin ->
+        when (origin) {
+            is TlcOriginDto -> TechnicalLagCalculatorName
+            is OsvVulnerabilityDto -> OsvVulnerabilityCalculatorName
+            is RepositoryDetails -> GitHubRepositoryName
+            is TrivyVulnerabilityDto -> TrivyVulnerabilityName
+            is TrufflehogReportDto -> TrufflehogSecretName
+            else -> "Unknown"
         }
-    }
-
-    return toolResult.map { (key, value) -> OriginWrapper(name = key, origin = value) }
+    }.map { (name, origins) -> OriginWrapper(name = name, origin = origins) }
 }
 
 fun getName(kpiType: String): String {
