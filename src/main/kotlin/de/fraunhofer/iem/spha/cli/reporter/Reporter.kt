@@ -9,10 +9,56 @@
 
 package de.fraunhofer.iem.spha.cli.reporter
 
+import de.fraunhofer.iem.spha.model.adapter.Origin
+import de.fraunhofer.iem.spha.model.adapter.OsvVulnerabilityDto
+import de.fraunhofer.iem.spha.model.adapter.RepositoryDetails
+import de.fraunhofer.iem.spha.model.adapter.TlcOriginDto
+import de.fraunhofer.iem.spha.model.adapter.TrivyVulnerabilityDto
+import de.fraunhofer.iem.spha.model.adapter.TrufflehogReportDto
 import de.fraunhofer.iem.spha.model.kpi.KpiType
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiCalculationResult
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiResultHierarchy
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiResultNode
+
+private const val TechnicalLagCalculatorName = "Technical Lag Calculator"
+private const val OsvVulnerabilityCalculatorName = "OSV Vulnerability Scanner"
+private const val GitHubRepositoryName = "GitHub"
+private const val TrivyVulnerabilityName = "Trivy Vulnerability Scanner"
+private const val TrufflehogSecretName = "Trufflehog Secret Scanner"
+
+fun originToToolResult(origins: List<Origin>): Map<String, List<Origin>> {
+    val toolResult = mutableMapOf<String, MutableList<Origin>>()
+    origins.forEach { it ->
+        when (it) {
+            is TlcOriginDto -> {
+                if (toolResult.contains(TechnicalLagCalculatorName))
+                    toolResult[TechnicalLagCalculatorName]?.add(it)
+                else toolResult[TechnicalLagCalculatorName] = mutableListOf(it)
+            }
+            is OsvVulnerabilityDto -> {
+                if (toolResult.contains(OsvVulnerabilityCalculatorName))
+                    toolResult[OsvVulnerabilityCalculatorName]?.add(it)
+                else toolResult[OsvVulnerabilityCalculatorName] = mutableListOf(it)
+            }
+            is RepositoryDetails -> {
+                if (toolResult.contains(GitHubRepositoryName))
+                    toolResult[GitHubRepositoryName]?.add(it)
+                else toolResult[GitHubRepositoryName] = mutableListOf(it)
+            }
+            is TrivyVulnerabilityDto -> {
+                if (toolResult.contains(TrivyVulnerabilityName))
+                    toolResult[TrivyVulnerabilityName]?.add(it)
+                else toolResult[TrivyVulnerabilityName] = mutableListOf(it)
+            }
+            is TrufflehogReportDto -> {
+                if (toolResult.contains(TrufflehogSecretName))
+                    toolResult[TrufflehogSecretName]?.add(it)
+                else toolResult[TrufflehogSecretName] = mutableListOf(it)
+            }
+        }
+    }
+    return toolResult
+}
 
 fun getName(kpiType: String): String {
     return when (kpiType) {

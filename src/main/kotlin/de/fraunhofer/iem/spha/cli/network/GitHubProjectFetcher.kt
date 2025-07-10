@@ -43,7 +43,7 @@ private data class Repository(
 
 @Serializable private data class LanguageConnection(val edges: List<LanguageEdge>)
 
-@Serializable private data class LanguageEdge(val node: LanguageNode)
+@Serializable private data class LanguageEdge(val size: Int, val node: LanguageNode)
 
 @Serializable private data class LanguageNode(val name: String)
 
@@ -106,6 +106,7 @@ class GitHubProjectFetcher(val logger: KLogger = KotlinLogging.logger {}) : Clos
                 url
                 languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
                   edges {
+                    size
                     node {
                       name
                     }

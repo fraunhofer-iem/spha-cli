@@ -17,6 +17,7 @@ import de.fraunhofer.iem.spha.cli.SphaToolCommandBase
 import de.fraunhofer.iem.spha.cli.network.GitHubProjectFetcher
 import de.fraunhofer.iem.spha.cli.network.NetworkResponse
 import de.fraunhofer.iem.spha.cli.network.ProjectInfo
+import de.fraunhofer.iem.spha.cli.reporter.originToToolResult
 import de.fraunhofer.iem.spha.core.KpiCalculator
 import de.fraunhofer.iem.spha.model.adapter.Origin
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.DefaultHierarchy
@@ -37,7 +38,7 @@ import org.koin.core.component.inject
 @Serializable
 data class SphaToolResult(
     val resultHierarchy: KpiResultHierarchy,
-    val origins: List<String>,
+    val origins: Map<String, List<Origin>>,
     val projectInfo: ProjectInfo,
 )
 
@@ -134,7 +135,7 @@ internal class AnalyzeRepositoryCommand :
         val result =
             SphaToolResult(
                 kpiResult,
-                rawValueKpisAndOrigin.map { it.second.toString() },
+                originToToolResult(rawValueKpisAndOrigin.map { it.second }),
                 projectInfo,
             )
         writeResult(result)
