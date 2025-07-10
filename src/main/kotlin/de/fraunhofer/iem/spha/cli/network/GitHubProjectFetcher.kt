@@ -59,13 +59,15 @@ private data class Repository(
 @Serializable
 data class ProjectInfo(
     val name: String,
-    val usedLanguages: Map<String, Int>,
+    val usedLanguages: List<Language>,
     val url: String,
     val stars: Int,
     val numberOfContributors: Int,
     val numberOfCommits: Int?,
     val lastCommitDate: String?,
 )
+
+@Serializable data class Language(val name: String, val size: Int)
 
 /** A class responsible for fetching project information from GitHub repositories. */
 class GitHubProjectFetcher(
@@ -213,7 +215,7 @@ class GitHubProjectFetcher(
         return NetworkResponse.Success(
             ProjectInfo(
                 name = repository.name,
-                usedLanguages = repository.languages.edges.associate { it.node.name to it.size },
+                usedLanguages = repository.languages.edges.map { Language(it.node.name, it.size) },
                 url = repository.url,
                 numberOfContributors = repository.collaborators.totalCount,
                 numberOfCommits = repository.defaultBranchRef?.target?.history?.totalCount,

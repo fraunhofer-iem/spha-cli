@@ -15,6 +15,7 @@ import de.fraunhofer.iem.spha.adapter.AdapterResult
 import de.fraunhofer.iem.spha.adapter.ToolResultParser
 import de.fraunhofer.iem.spha.cli.SphaToolCommandBase
 import de.fraunhofer.iem.spha.cli.network.GitHubProjectFetcher
+import de.fraunhofer.iem.spha.cli.network.Language
 import de.fraunhofer.iem.spha.cli.network.NetworkResponse
 import de.fraunhofer.iem.spha.cli.network.ProjectInfo
 import de.fraunhofer.iem.spha.cli.reporter.originToToolResult
@@ -103,7 +104,7 @@ internal class AnalyzeRepositoryCommand :
                 else ->
                     ProjectInfo(
                         name = "Currently no data available",
-                        usedLanguages = mapOf(Pair("Currently no data available", 0)),
+                        usedLanguages = listOf(Language("Currently no data available", 100)),
                         url = repoUrl,
                         numberOfContributors = -1,
                         numberOfCommits = -1,
