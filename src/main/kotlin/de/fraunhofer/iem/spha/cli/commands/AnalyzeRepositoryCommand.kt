@@ -93,7 +93,6 @@ internal class AnalyzeRepositoryCommand :
             return
         }
 
-        // Use runBlocking to call the suspend function from a non-suspend context
         val projectInfoRes = githubProjectFetcher.use { it.getProjectInfo(repoUrl, githubToken) }
         val projectInfo =
             when (projectInfoRes) {
