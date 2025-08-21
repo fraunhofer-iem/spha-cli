@@ -18,9 +18,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import de.fraunhofer.iem.spha.cli.commands.AnalyzeRepositoryCommand
 import de.fraunhofer.iem.spha.cli.commands.CalculateKpiCommand
 import de.fraunhofer.iem.spha.cli.commands.ReportCommand
-import de.fraunhofer.iem.spha.cli.commands.TransformToolResultCommand
-import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
-import de.fraunhofer.iem.spha.cli.transformer.Tool2RawKpiTransformer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
@@ -30,26 +27,18 @@ import org.koin.core.context.GlobalContext.startKoin
 import org.koin.dsl.module
 import org.slf4j.simple.SimpleLogger
 
-internal val appModules = module {
-    single<RawKpiTransformer> { Tool2RawKpiTransformer() }
-    single<FileSystem> { FileSystems.getDefault() }
-}
+internal val appModules = module { single<FileSystem> { FileSystems.getDefault() } }
 
 suspend fun main(args: Array<String>) {
     startKoin { modules(appModules) }
 
     try {
         MainSphaToolCommand()
-            .subcommands(
-                TransformToolResultCommand(),
-                CalculateKpiCommand(),
-                ReportCommand(),
-                AnalyzeRepositoryCommand(),
-            )
+            .subcommands(CalculateKpiCommand(), ReportCommand(), AnalyzeRepositoryCommand())
             .main(args)
     } catch (e: Exception) {
         val logger = KotlinLogging.logger {}
-        logger.error(e, { e.message })
+        logger.error(e) { e.message }
         exitProcess(1)
     }
 }
