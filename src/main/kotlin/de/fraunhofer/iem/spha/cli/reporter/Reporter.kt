@@ -9,37 +9,9 @@
 
 package de.fraunhofer.iem.spha.cli.reporter
 
-import de.fraunhofer.iem.spha.cli.commands.OriginWrapper
-import de.fraunhofer.iem.spha.model.adapter.Origin
-import de.fraunhofer.iem.spha.model.adapter.OsvVulnerabilityDto
-import de.fraunhofer.iem.spha.model.adapter.RepositoryDetails
-import de.fraunhofer.iem.spha.model.adapter.TlcOrigin
-import de.fraunhofer.iem.spha.model.adapter.TrivyVulnerabilityDto
-import de.fraunhofer.iem.spha.model.adapter.TrufflehogReportDto
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiCalculationResult
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiResultHierarchy
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiResultNode
-
-private const val TechnicalLagCalculatorName = "Technical Lag Calculator"
-private const val OsvVulnerabilityCalculatorName = "OSV Vulnerability Scanner"
-private const val GitHubRepositoryName = "GitHub"
-private const val TrivyVulnerabilityName = "Trivy Vulnerability Scanner"
-private const val TrufflehogSecretName = "Trufflehog Secret Scanner"
-
-fun originToToolResult(origins: List<Origin>): List<OriginWrapper> {
-    return origins
-        .groupBy { origin ->
-            when (origin) {
-                is TlcOrigin -> TechnicalLagCalculatorName
-                is OsvVulnerabilityDto -> OsvVulnerabilityCalculatorName
-                is RepositoryDetails -> GitHubRepositoryName
-                is TrivyVulnerabilityDto -> TrivyVulnerabilityName
-                is TrufflehogReportDto -> TrufflehogSecretName
-                else -> "Unknown"
-            }
-        }
-        .map { (name, origins) -> OriginWrapper(name = name, origin = origins) }
-}
 
 fun KpiResultNode.getScoreVisualization(): String {
     return "${this.metaInfo?.displayName}:" +
@@ -66,9 +38,9 @@ fun KpiResultHierarchy.getMarkdown(): String {
                     .trimMargin()
             }
 
-    return """# $topLevelScore 
-        | ## Top level KPI Scores
-        | $firstLevelScores
-            """
-        .trimMargin()
+    return """
+           |# $topLevelScore 
+           | ## Top level KPI Scores
+           | $firstLevelScores"""
+               .trimMargin()
 }

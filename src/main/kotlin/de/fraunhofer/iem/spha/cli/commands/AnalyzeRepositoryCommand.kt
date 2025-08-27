@@ -11,6 +11,7 @@ package de.fraunhofer.iem.spha.cli.commands
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import de.fraunhofer.iem.spha.adapter.ToolInfo
 import de.fraunhofer.iem.spha.adapter.ToolResultParser
 import de.fraunhofer.iem.spha.adapter.TransformationResult
 import de.fraunhofer.iem.spha.cli.SphaToolCommandBase
@@ -18,7 +19,6 @@ import de.fraunhofer.iem.spha.cli.network.GitHubProjectFetcher
 import de.fraunhofer.iem.spha.cli.network.Language
 import de.fraunhofer.iem.spha.cli.network.NetworkResponse
 import de.fraunhofer.iem.spha.cli.network.ProjectInfo
-import de.fraunhofer.iem.spha.cli.reporter.originToToolResult
 import de.fraunhofer.iem.spha.core.KpiCalculator
 import de.fraunhofer.iem.spha.model.adapter.Origin
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.DefaultHierarchy
@@ -39,11 +39,9 @@ import org.koin.core.component.inject
 @Serializable
 data class SphaToolResult(
     val resultHierarchy: KpiResultHierarchy,
-    val origins: List<OriginWrapper>,
+    val origins: List<Pair<ToolInfo, List<Origin>>>,
     val projectInfo: ProjectInfo,
 )
-
-@Serializable data class OriginWrapper(val origin: List<Origin>, val name: String)
 
 internal class AnalyzeRepositoryCommand :
     SphaToolCommandBase(
@@ -86,66 +84,63 @@ internal class AnalyzeRepositoryCommand :
     override suspend fun run() {
         super.run()
 
-        // TODO: do we want to make this somehow more transparent to CLI users?
+        // Attempt to read GitHub token; proceed with defaults if unavailable
         val githubToken = System.getenv("GITHUB_TOKEN")
-        if (githubToken == null) {
-            Logger.error { "GITHUB_TOKEN environment variable not set." }
+        if (githubToken.isNullOrBlank()) {
+            Logger.error {
+                "GITHUB_TOKEN environment variable not set. Proceeding without GitHub project metadata."
+            }
             return
         }
 
         val projectInfoRes = githubProjectFetcher.use { it.getProjectInfo(repoUrl, githubToken) }
         val projectInfo =
             when (projectInfoRes) {
-                is NetworkResponse.Success<ProjectInfo> -> {
-                    projectInfoRes.data
-                }
-
-                else ->
-                    ProjectInfo(
-                        name = "Currently no data available",
-                        usedLanguages = listOf(Language("Currently no data available", 100)),
-                        url = repoUrl,
-                        numberOfContributors = -1,
-                        numberOfCommits = -1,
-                        lastCommitDate = "Currently no data available",
-                        stars = -1,
-                    )
+                is NetworkResponse.Success<ProjectInfo> -> projectInfoRes.data
+                else -> defaultProjectInfo(repoUrl)
             }
-        Logger.info { "Fetched project info: $projectInfo" }
 
-        val toolPath = fileSystem.getPath(this.toolResultDir ?: "").toAbsolutePath().toString()
+        Logger.info { "Project info: $projectInfo" }
+
+        // Determine tool results directory
+        val toolPath =
+            (this.toolResultDir?.takeIf { it.isNotBlank() } ?: ".").let {
+                fileSystem.getPath(it).toAbsolutePath().toString()
+            }
+        Logger.debug { "Reading tool results from: $toolPath" }
 
         val adapterResults = ToolResultParser.parseJsonFilesFromDirectory(directoryPath = toolPath)
+        Logger.info { "Parsed ${adapterResults.size} tool result file(s)." }
 
         if (adapterResults.isEmpty()) {
-            Logger.warn { "No kpi values to calculate. Adapter results are empty." }
+            Logger.warn { "No KPI values to calculate: adapter results are empty." }
         }
 
-        val rawValueKpisAndOrigin =
+        val rawValueKpis =
             adapterResults.flatMap { result ->
                 if (result.transformationResults.isNotEmpty()) {
                     result.transformationResults.mapNotNull {
-                        if (it is TransformationResult.Success<*>) {
-                            Pair(it.rawValueKpi, it.origin)
-                        } else {
-                            null
-                        }
+                        if (it is TransformationResult.Success<*>) it.rawValueKpi else null
                     }
-                } else {
-                    emptyList()
+                } else emptyList()
+            }
+        Logger.info { "Collected ${rawValueKpis.size} raw KPI value(s)." }
+
+        val hierarchyModel = getHierarchy()
+        val kpiResult = KpiCalculator.calculateKpis(hierarchyModel, rawValueKpis)
+
+        val originsData =
+            adapterResults.mapNotNull { result ->
+                result.toolInfo?.let { toolInfo ->
+                    val origins =
+                        result.transformationResults.mapNotNull {
+                            if (it is TransformationResult.Success<*>) it.origin else null
+                        }
+                    Pair(toolInfo, origins)
                 }
             }
 
-        val hierarchyModel = getHierarchy()
-        val kpiResult =
-            KpiCalculator.calculateKpis(hierarchyModel, rawValueKpisAndOrigin.map { it.first })
-
-        val result =
-            SphaToolResult(
-                kpiResult,
-                originToToolResult(rawValueKpisAndOrigin.map { it.second }),
-                projectInfo,
-            )
+        val result = SphaToolResult(kpiResult, originsData, projectInfo)
         writeResult(result)
     }
 
@@ -154,17 +149,36 @@ internal class AnalyzeRepositoryCommand :
         val outputFilePath = fileSystem.getPath(output)
 
         val directory = outputFilePath.toAbsolutePath().parent
-        directory.createDirectories()
+        directory?.createDirectories()
 
+        Logger.info { "Writing result to: ${outputFilePath.toAbsolutePath()}" }
         outputFilePath.outputStream().use { Json.encodeToStream(result, it) }
     }
 
+    private fun defaultProjectInfo(repoUrl: String) =
+        ProjectInfo(
+            name = "Currently no data available",
+            usedLanguages = listOf(Language("Currently no data available", 100)),
+            url = repoUrl,
+            numberOfContributors = -1,
+            numberOfCommits = -1,
+            lastCommitDate = "Currently no data available",
+            stars = -1,
+        )
+
     @OptIn(ExperimentalSerializationApi::class)
     private fun getHierarchy(): KpiHierarchy {
-        if (hierarchy == null) return DefaultHierarchy.get()
+        if (hierarchy.isNullOrBlank()) return DefaultHierarchy.get()
 
-        fileSystem.getPath(hierarchy!!).inputStream().use {
-            return Json.decodeFromStream<KpiHierarchy>(it)
+        return try {
+            fileSystem.getPath(hierarchy!!).inputStream().use {
+                Json.decodeFromStream<KpiHierarchy>(it)
+            }
+        } catch (e: Exception) {
+            Logger.error(e) {
+                "Failed to read or parse hierarchy from '$hierarchy'. Falling back to default hierarchy."
+            }
+            DefaultHierarchy.get()
         }
     }
 }
