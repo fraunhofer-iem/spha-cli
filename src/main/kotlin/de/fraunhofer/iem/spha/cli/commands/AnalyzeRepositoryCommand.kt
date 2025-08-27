@@ -11,8 +11,8 @@ package de.fraunhofer.iem.spha.cli.commands
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import de.fraunhofer.iem.spha.adapter.AdapterResult
 import de.fraunhofer.iem.spha.adapter.ToolResultParser
+import de.fraunhofer.iem.spha.adapter.TransformationResult
 import de.fraunhofer.iem.spha.cli.SphaToolCommandBase
 import de.fraunhofer.iem.spha.cli.network.GitHubProjectFetcher
 import de.fraunhofer.iem.spha.cli.network.Language
@@ -122,12 +122,17 @@ internal class AnalyzeRepositoryCommand :
         }
 
         val rawValueKpisAndOrigin =
-            adapterResults.mapNotNull {
-                when (it) {
-                    is AdapterResult.Success<Origin> -> {
-                        Pair(it.rawValueKpi, it.origin)
+            adapterResults.flatMap { result ->
+                if (result.transformationResults.isNotEmpty()) {
+                    result.transformationResults.mapNotNull {
+                        if (it is TransformationResult.Success<*>) {
+                            Pair(it.rawValueKpi, it.origin)
+                        } else {
+                            null
+                        }
                     }
-                    else -> null
+                } else {
+                    emptyList()
                 }
             }
 

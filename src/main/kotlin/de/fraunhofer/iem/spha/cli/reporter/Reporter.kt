@@ -13,7 +13,7 @@ import de.fraunhofer.iem.spha.cli.commands.OriginWrapper
 import de.fraunhofer.iem.spha.model.adapter.Origin
 import de.fraunhofer.iem.spha.model.adapter.OsvVulnerabilityDto
 import de.fraunhofer.iem.spha.model.adapter.RepositoryDetails
-import de.fraunhofer.iem.spha.model.adapter.Tlc
+import de.fraunhofer.iem.spha.model.adapter.TlcOrigin
 import de.fraunhofer.iem.spha.model.adapter.TrivyVulnerabilityDto
 import de.fraunhofer.iem.spha.model.adapter.TrufflehogReportDto
 import de.fraunhofer.iem.spha.model.kpi.hierarchy.KpiCalculationResult
@@ -30,7 +30,7 @@ fun originToToolResult(origins: List<Origin>): List<OriginWrapper> {
     return origins
         .groupBy { origin ->
             when (origin) {
-                is Tlc -> TechnicalLagCalculatorName
+                is TlcOrigin -> TechnicalLagCalculatorName
                 is OsvVulnerabilityDto -> OsvVulnerabilityCalculatorName
                 is RepositoryDetails -> GitHubRepositoryName
                 is TrivyVulnerabilityDto -> TrivyVulnerabilityName
