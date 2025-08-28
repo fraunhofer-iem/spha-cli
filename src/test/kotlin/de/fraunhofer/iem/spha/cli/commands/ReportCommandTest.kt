@@ -9,7 +9,7 @@
 
 package de.fraunhofer.iem.spha.cli.commands
 
-import com.github.ajalt.clikt.testing.test
+import com.github.ajalt.clikt.command.test
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import de.fraunhofer.iem.spha.cli.appModules
@@ -18,6 +18,7 @@ import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.core.logger.Level
@@ -36,7 +37,7 @@ class ReportCommandTest : KoinTest {
 
     @OptIn(ExperimentalSerializationApi::class)
     @Test
-    fun testMarkdown_Integration() {
+    fun testMarkdown_Integration() = runTest {
         val fileSystem =
             declare<FileSystem> { Jimfs.newFileSystem(Configuration.forCurrentPlatform()) }
 

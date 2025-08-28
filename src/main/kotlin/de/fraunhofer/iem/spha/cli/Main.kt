@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Fraunhofer IEM. All rights reserved.
+ * Copyright (c) 2024-2025 Fraunhofer IEM. All rights reserved.
  *
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  *
@@ -9,17 +9,15 @@
 
 package de.fraunhofer.iem.spha.cli
 
-import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.command.SuspendingCliktCommand
+import com.github.ajalt.clikt.command.main
 import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import de.fraunhofer.iem.spha.cli.commands.AnalyzeRepositoryCommand
 import de.fraunhofer.iem.spha.cli.commands.CalculateKpiCommand
 import de.fraunhofer.iem.spha.cli.commands.ReportCommand
-import de.fraunhofer.iem.spha.cli.commands.TransformToolResultCommand
-import de.fraunhofer.iem.spha.cli.transformer.RawKpiTransformer
-import de.fraunhofer.iem.spha.cli.transformer.Tool2RawKpiTransformer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
@@ -29,21 +27,18 @@ import org.koin.core.context.GlobalContext.startKoin
 import org.koin.dsl.module
 import org.slf4j.simple.SimpleLogger
 
-internal val appModules = module {
-    single<RawKpiTransformer> { Tool2RawKpiTransformer() }
-    single<FileSystem> { FileSystems.getDefault() }
-}
+internal val appModules = module { single<FileSystem> { FileSystems.getDefault() } }
 
-fun main(args: Array<String>) {
+suspend fun main(args: Array<String>) {
     startKoin { modules(appModules) }
 
     try {
         MainSphaToolCommand()
-            .subcommands(TransformToolResultCommand(), CalculateKpiCommand(), ReportCommand())
+            .subcommands(CalculateKpiCommand(), ReportCommand(), AnalyzeRepositoryCommand())
             .main(args)
     } catch (e: Exception) {
         val logger = KotlinLogging.logger {}
-        logger.error(e, { e.message })
+        logger.error(e) { e.message }
         exitProcess(1)
     }
 }
@@ -51,7 +46,7 @@ fun main(args: Array<String>) {
 /**
  * The Main command of this application. Supports a global switch to enable verbose logging mode.
  */
-private class MainSphaToolCommand : CliktCommand() {
+private class MainSphaToolCommand : SuspendingCliktCommand() {
 
     val verbose by
         option(
@@ -61,7 +56,7 @@ private class MainSphaToolCommand : CliktCommand() {
             )
             .flag()
 
-    override fun run() {
+    override suspend fun run() {
         configureLogging()
     }
 
@@ -75,11 +70,10 @@ private class MainSphaToolCommand : CliktCommand() {
  * the design of clikt, the main command should be separate and this base class should not introduce
  * the --verbose switch. Otherwise, the following cli input would be legal: './spha -v transform -t
  * abc -v'. The first -v switch actually triggers the logging configuration, where the second -v
- * switch is independent to the first switch. This will cause confusion for users, which switch to
- * use.
+ * switch is independent of the first switch. This will cause confusion for users who switch to use.
  */
 internal abstract class SphaToolCommandBase(name: String? = null, val help: String = "") :
-    CliktCommand(name = name), KoinComponent {
+    SuspendingCliktCommand(name = name), KoinComponent {
     override fun help(context: Context) = help
 
     // NB: Needs to be lazy, as otherwise we initialize this variable before setting the logger
@@ -96,7 +90,7 @@ internal abstract class SphaToolCommandBase(name: String? = null, val help: Stri
             )
             .flag()
 
-    override fun run() {
+    override suspend fun run() {
         Logger.trace {
             "Original command arguments: '${currentContext.originalArgv.joinToString()}}'"
         }
