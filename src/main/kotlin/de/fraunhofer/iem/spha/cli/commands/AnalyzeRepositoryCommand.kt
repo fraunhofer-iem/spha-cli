@@ -39,9 +39,11 @@ import org.koin.core.component.inject
 @Serializable
 data class SphaToolResult(
     val resultHierarchy: KpiResultHierarchy,
-    val origins: List<Pair<ToolInfo, List<Origin>>>,
+    val origins: List<ToolInfoAndOrigin>,
     val projectInfo: ProjectInfo,
 )
+
+@Serializable data class ToolInfoAndOrigin(val toolInfo: ToolInfo, val origins: List<Origin>)
 
 internal class AnalyzeRepositoryCommand :
     SphaToolCommandBase(
@@ -136,7 +138,7 @@ internal class AnalyzeRepositoryCommand :
                         result.transformationResults.mapNotNull {
                             if (it is TransformationResult.Success<*>) it.origin else null
                         }
-                    Pair(toolInfo, origins)
+                    ToolInfoAndOrigin(toolInfo, origins)
                 }
             }
 
