@@ -67,7 +67,7 @@ application { mainClass = "de.fraunhofer.iem.spha.cli.MainKt" }
 
 kotlin {
     compilerOptions {
-        jvmToolchain(22)
+        jvmToolchain(24)
         apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
     }
 }

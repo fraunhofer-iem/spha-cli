@@ -42,5 +42,5 @@ fun KpiResultHierarchy.getMarkdown(): String {
            |# $topLevelScore 
            | ## Top level KPI Scores
            | $firstLevelScores"""
-               .trimMargin()
+        .trimMargin()
 }
