@@ -31,13 +31,13 @@ jobs:
         uses: gradle/actions/setup-gradle@d156388eb19639ec20ade50009f3d199ce1e2808
 
       - name: Package distribution
-        run: ./gradlew installDist
+        run: ./gradlew distZip
 
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.SPHA_VERSION }}
-          files: build/install/*
+          files: build/distributions/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
