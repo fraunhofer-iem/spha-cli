@@ -1,4 +1,15 @@
+# ToDo list:
+# - make the Dockerfile run with a not root user
+# - make sure the file works multi platform
+# - add a way to easily define versions for all used tools to have them update easier (maybe use a .version.env (see ORT for comparison))
+# - do a multi stage build
+# - if you are bored do as much parallelization as you want
+# - probably move the install instructions from the raw Dockerfile to a standalone script for better maintainability
+# - use smaller base image (remember the multi platform requirement, I think the default alpine image is not available for arm)
+# - add proper usage description. Current workflow: "docker run -v $(pwd):/local sphacli" inside the repository you want to analyze. A "result" dir must be present.
+
 FROM ubuntu:latest AS base
+
 ENV SPHA_CLI_VERSION=0.3.1
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -28,6 +39,9 @@ RUN curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main
 # ----------------------------
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.66.0
 
+RUN curl -sSL https://github.com/fraunhofer-iem/Technical-Lag-Analyzer/releases/download/v12/technicalLag \
+    -o /usr/local/bin/technicalLag \
+    && chmod +x /usr/local/bin/technicalLag
 # ----------------------------
 # Install SPHA-CLI
 # ----------------------------

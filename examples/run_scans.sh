@@ -10,12 +10,9 @@
 
 set -uo pipefail  # Removed -e to allow continuing after non-zero exits
 
-REPO_DIR="/input"
-RESULT_DIR="/result"
-mkdir -p "$REPO_DIR"
-mkdir -p "$RESULT_DIR"
-
-# Copy repo contents into container
+# must exist before and have the right privileges for a non root docker user to write the results to it)
+REPO_DIR="/local"
+RESULT_DIR="/local/result"
 
 cd "$REPO_DIR" || exit
 
@@ -42,6 +39,12 @@ fi
 echo "=== Running Trivy (filesystem scan) ==="
 if ! trivy fs --output "$RESULT_DIR"/trivy.json .; then
     echo "Trivy completed with findings or errors (exit code: $?)"
+    OVERALL_SUCCESS=1
+fi
+
+echo "=== Running Technical Lag Analyzer ==="
+if ! technicalLag -in "$RESULT_DIR"/sbom.json -out "$RESULT_DIR"/technicalLag.json; then
+    echo "Technical Lag completed with findings or errors (exit code: $?)"
     OVERALL_SUCCESS=1
 fi
 
