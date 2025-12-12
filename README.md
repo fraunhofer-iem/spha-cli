@@ -1,5 +1,8 @@
 ![SPHA Logo](docs/img/Software_Project_Health_Assistant_Secondary-Logo.png)
 
+# Archived
+We migrated the contents of this repository into SPHA's main [repository](https://github.com/fraunhofer-iem/spha)
+
 ## About
 
 SPHA is a fully automated tool suite that assesses and communicates all aspects
